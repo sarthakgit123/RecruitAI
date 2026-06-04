@@ -1,0 +1,14 @@
+body{
+    font-family:Arial;
+    width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+textarea{
+    width:100%;
+}
+
+button{
+    padding:10px;
+}

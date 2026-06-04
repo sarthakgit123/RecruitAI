@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+</head>
+<body>
+
+<h1>Top Candidates</h1>
+
+{% for candidate in results %}
+
+<div>
+
+    <h3>
+        {{candidate.resume}}
+    </h3>
+
+    <p>
+        Similarity:
+        {{candidate.similarity}}%
+    </p>
+
+</div>
+
+<hr>
+
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+{
+    "name": "ARYAN MANAV",
+    "email": "aryanmanav6@gmail.com",
+    "skills": [
+        "Java",
+        "C",
+        "Python",
+        "JavaScript",
+        "Node.js",
+        "Express.js",
+        "Django",
+        "Flask",
+        "Git",
+        "GitHub",
+        "Postman",
+        "Vercel",
+        "MongoDB",
+        "MySQL",
+        "Data Structures & Algorithms",
+        "Adaptive Design",
+        "Component Architecture",
+        "Leadership",
+        "Communication",
+        "Problem Solving",
+        "Time Management",
+        "React.js",
+        "SCSS",
+        "MERN stack",
+        "REST APIs",
+        "Bootstrap 5",
+        "Figma",
+        "Socket.io",
+        "Monaco Editor",
+        "Compilex"
+    ],
+    "projects": [
+        {
+            "title": "Client-Agent Chat Platform (MERN + Socket.io)",
+            "description": "Built a real-time client-agent chat app used to simulate component-based support systems, improving agent workflow visibility via a dedicated dashboard. Engineered agent dashboard with message logs, dynamic assignments, and chat controls. Used React.js (frontend), Node.js & Express (backend), and Socket.io for bidirectional messaging."
+        },
+        {
+            "title": "Online Code Editor (MERN Stack + Monaco Editor)",
+            "description": "Developed a MERN stack-based code editor. The editor supports syntax highlighting, real-time collaboration, and multiple language execution. Optimized performance by implementing efficient code execution workflows. Tech Stack: React.js, Node.js, Express.js, Monaco Editor, Compilex."
+        },
+        {
+            "title": "Personal Portfolio Website (React + Vercel)",
+            "description": "Architected a responsive portfolio using modern UI frameworks; optimized for speed and SEO. Deployed on Vercel to showcase projects and contact details interactively."
+        }
+    ],
+    "education": [
+        {
+            "institution": "National Institute of Technology Delhi",
+            "degree": "B.Tech. in Electrical Engineering",
+            "dates": "Aug 2023 – Present"
+        }
+    ],
+    "experience": [
+        {
+            "title": "SCSS Framework & Limitless CSS Migration",
+            "company": "DWA Commerce",
+            "dates": "Jan 2024 – March 2024",
+            "description": "Built a modular SCSS framework and migrated Limitless CSS to version 4.0. Enhanced scalability, responsiveness, and cross-browser compatibility."
+        },
+        {
+            "title": "UI/UX & Web Design Intern",
+            "company": "Acro Engineering Company",
+            "dates": "Jun 2025 – Present",
+            "description": "Designed and delivered scalable UI components using Bootstrap 5 and Figma. Built and shipped 20+ reusable React.js components, accelerating feature delivery by 30% and reducing code duplication. Participated in Agile sprints and iterative user testing cycles."
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Resume Matcher</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>AI Resume Matcher</h1>
+
+<h2>Upload Resumes</h2>
+
+<form action="/upload-resumes"
+      method="post"
+      enctype="multipart/form-data">
+
+    <input
+        type="file"
+        name="resumes"
+        multiple
+        accept=".pdf">
+
+    <button type="submit">
+        Upload
+    </button>
+
+</form>
+
+<hr>
+
+<h2>Match Candidates</h2>
+
+<form action="/match-ui"
+      method="post">
+
+    <textarea
+        name="jd"
+        rows="10"
+        cols="60"
+        placeholder="Paste Job Description">
+    </textarea>
+
+    <br>
+
+    <button type="submit">
+        Match
+    </button>
+
+</form>
+
+</body>
+</html>
