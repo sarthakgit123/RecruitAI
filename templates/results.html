@@ -7,17 +7,25 @@
 
 <h1>Top Candidates</h1>
 
+{% if error %}
+
+<p>{{ error }}</p>
+
+{% endif %}
+
+{% if results %}
+
 {% for candidate in results %}
 
 <div>
 
     <h3>
-        {{candidate.resume}}
+        {{ candidate.resume }}
     </h3>
 
     <p>
         Similarity:
-        {{candidate.similarity}}%
+        {{ candidate.similarity }}%
     </p>
 
 </div>
@@ -25,6 +33,16 @@
 <hr>
 
 {% endfor %}
+
+{% else %}
+
+<p>No matching resumes found.</p>
+
+{% endif %}
+
+<a href="/">
+Back to Home
+</a>
 
 </body>
 </html>

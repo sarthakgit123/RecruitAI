@@ -26,8 +26,11 @@ from services.match_service import (
 )
 
 from services.upload_service import (
-    process_uploaded_resumes
+    process_uploaded_zip
 )
+
+import zipfile
+import shutil
 
 app = FastAPI(
     title="AI Resume JD Matcher",
@@ -45,6 +48,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
 
 # -----------------------------
 # Static + Templates
@@ -81,6 +85,27 @@ os.makedirs(
     exist_ok=True
 )
 
+def cleanup():
+
+    folders = [
+        "uploads/resumes",
+        "profiles",
+        "faiss_db"
+    ]
+
+    for folder in folders:
+
+        shutil.rmtree(
+            folder,
+            ignore_errors=True
+        )
+
+        os.makedirs(
+            folder,
+            exist_ok=True
+        )
+
+
 # -----------------------------
 # Home Page
 # -----------------------------
@@ -100,23 +125,51 @@ async def home(request: Request):
 # Upload Resumes
 # -----------------------------
 
-@app.post("/upload-resumes")
-async def upload_resumes(
+@app.post("/upload-zip")
+async def upload_zip(
     request: Request,
-    resumes: List[UploadFile] = File(...)
+    zip_file: UploadFile = File(...)
 ):
 
     try:
 
-        result = await process_uploaded_resumes(
-            resumes
+        zip_path = os.path.join(
+            "uploads",
+            zip_file.filename
         )
+
+        with open(zip_path, "wb") as f:
+            f.write(await zip_file.read())
+
+        # Clear previous resumes
+
+        shutil.rmtree(
+            "uploads/resumes",
+            ignore_errors=True
+        )
+
+        os.makedirs(
+            "uploads/resumes",
+            exist_ok=True
+        )
+
+        # Extract ZIP
+
+        with zipfile.ZipFile(
+            zip_path,
+            "r"
+        ) as zip_ref:
+
+            zip_ref.extractall(
+                "uploads/resumes"
+            )
 
         return templates.TemplateResponse(
             request=request,
             name="upload_success.html",
             context={
-                "result": result
+                "result":
+                "ZIP uploaded successfully"
             }
         )
 
@@ -126,7 +179,6 @@ async def upload_resumes(
             "status": "error",
             "message": str(e)
         }
-
 # -----------------------------
 # Match UI
 # -----------------------------
@@ -142,6 +194,8 @@ async def match_ui(
         results = process_resumes_and_match(
             jd
         )
+         
+        cleanup()
 
         return templates.TemplateResponse(
             request=request,
@@ -176,6 +230,8 @@ async def match_api(
         results = process_resumes_and_match(
             jd
         )
+
+        cleanup()
 
         return {
             "status": "success",

@@ -1,58 +1,68 @@
 import os
+import zipfile
+import shutil
 
-from services.pdf_service import (
-    process_all_resumes
-)
+UPLOAD_FOLDER = "uploads"
+RESUME_FOLDER = "uploads/resumes"
 
-from services.faiss_service import (
-    build_faiss_index
-)
-
-
-UPLOAD_DIR = "uploads"
-
-os.makedirs(
-    UPLOAD_DIR,
-    exist_ok=True
-)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(RESUME_FOLDER, exist_ok=True)
 
 
-async def process_uploaded_resumes(
-    resumes
-):
+async def process_uploaded_zip(zip_file):
 
-    uploaded_files = []
+    # Clear previous resumes
+    shutil.rmtree(
+        RESUME_FOLDER,
+        ignore_errors=True
+    )
 
-    for resume in resumes:
+    os.makedirs(
+        RESUME_FOLDER,
+        exist_ok=True
+    )
 
-        file_path = os.path.join(
-            UPLOAD_DIR,
-            resume.filename
+    # Save uploaded zip
+    zip_path = os.path.join(
+        UPLOAD_FOLDER,
+        zip_file.filename
+    )
+
+    with open(zip_path, "wb") as f:
+        content = await zip_file.read()
+        f.write(content)
+
+    # Extract zip
+    with zipfile.ZipFile(
+        zip_path,
+        "r"
+    ) as zip_ref:
+
+        zip_ref.extractall(
+            RESUME_FOLDER
         )
 
-        with open(
-            file_path,
-            "wb"
-        ) as f:
+    # Delete uploaded zip
+    os.remove(zip_path)
 
-            content = await resume.read()
+    # Collect PDF names
+    extracted_files = []
 
-            f.write(content)
+    for file in os.listdir(
+        RESUME_FOLDER
+    ):
 
-        uploaded_files.append(
-            resume.filename
-        )
-
-    # Generate profile JSONs
-    process_all_resumes()
-
-    # Build FAISS index
-    build_faiss_index()
+        if file.lower().endswith(
+            ".pdf"
+        ):
+            extracted_files.append(
+                file
+            )
 
     return {
         "status": "success",
-        "uploaded_files": uploaded_files,
+        "uploaded_files": extracted_files,
         "total_files": len(
-            uploaded_files
+            extracted_files
         )
     }

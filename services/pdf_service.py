@@ -1,47 +1,75 @@
 import os
 import json
-from services.profile_service import profile_genrate
+
+from services.profile_service import (
+    profile_genrate
+)
 
 def process_all_resumes():
-    os.makedirs("profiles", exist_ok=True)
 
-    # Process all resumes
-    for file in os.listdir("uploads"):
+    os.makedirs(
+        "profiles",
+        exist_ok=True
+    )
 
-        if file.endswith(".pdf"):
+    for root, dirs, files in os.walk(
+        "uploads/resumes"
+    ):
 
-            pdf_path = os.path.join("uploads", file)
+        for file in files:
 
-            print(f"Processing: {file}")
+            if file.endswith(".pdf"):
 
-            try:
-                profile = profile_genrate(pdf_path)
-
-                json_filename = os.path.splitext(file)[0] + ".json"
-
-                json_path = os.path.join(
-                    "profiles",
-                    json_filename
+                pdf_path = os.path.join(
+                    root,
+                    file
                 )
 
-                with open(
-                    json_path,
-                    "w",
-                    encoding="utf-8"
-                ) as f:
+                print(
+                    f"Processing: {pdf_path}"
+                )
 
-                    json.dump(
-                        profile,
-                        f,
-                        indent=4,
-                        ensure_ascii=False
+                try:
+
+                    profile = profile_genrate(
+                        pdf_path
                     )
 
-                print(f"Saved: {json_path}")
+                    json_filename = (
+                        os.path.splitext(file)[0]
+                        + ".json"
+                    )
 
-            except Exception as e:
+                    json_path = os.path.join(
+                        "profiles",
+                        json_filename
+                    )
 
-                print(f"Failed: {file}")
-                print(e)
+                    with open(
+                        json_path,
+                        "w",
+                        encoding="utf-8"
+                    ) as f:
 
-    print("\nAll resumes processed.")
+                        json.dump(
+                            profile,
+                            f,
+                            indent=4,
+                            ensure_ascii=False
+                        )
+
+                    print(
+                        f"Saved: {json_path}"
+                    )
+
+                except Exception as e:
+
+                    print(
+                        f"Failed: {file}"
+                    )
+
+                    print(e)
+
+    print(
+        "\nAll resumes processed."
+    )
