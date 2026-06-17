@@ -1,19 +1,33 @@
 import os
 import json
 
-from services.profile_service import (
-    profile_genrate
+from profile_service import (
+    profile_generate
 )
+
+# Anchor all paths to this file's location (services/), then go up one
+# level to the project root. This makes the script work no matter where
+# it's run from (services/ directly, project root via -m, etc).
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+
+UPLOADS_DIR = os.path.join(PROJECT_ROOT, "uploads", "resumes", "resumes")
+PROFILES_DIR = os.path.join(PROJECT_ROOT, "profiles")
+
 
 def process_all_resumes():
 
     os.makedirs(
-        "profiles",
+        PROFILES_DIR,
         exist_ok=True
     )
 
+    if not os.path.isdir(UPLOADS_DIR):
+        print(f"Upload folder not found: {UPLOADS_DIR}")
+        return
+
     for root, dirs, files in os.walk(
-        "uploads/resumes"
+        UPLOADS_DIR
     ):
 
         for file in files:
@@ -31,7 +45,7 @@ def process_all_resumes():
 
                 try:
 
-                    profile = profile_genrate(
+                    profile = profile_generate(
                         pdf_path
                     )
 
@@ -41,7 +55,7 @@ def process_all_resumes():
                     )
 
                     json_path = os.path.join(
-                        "profiles",
+                        PROFILES_DIR,
                         json_filename
                     )
 
@@ -73,3 +87,7 @@ def process_all_resumes():
     print(
         "\nAll resumes processed."
     )
+
+
+if __name__ == "__main__":
+    process_all_resumes()

@@ -14,7 +14,7 @@ def build_faiss_index():
     embeddings = []
     resume_names = []
 
-    profile_folder = "profiles"
+    profile_folder = r"C:\Users\sarth\OneDrive\Desktop\AI-Resume-JD-Matcher\profiles"
 
     for file in os.listdir(profile_folder):
 
@@ -37,15 +37,16 @@ def build_faiss_index():
         # Projects
         # ----------------------------
         projects_text = " ".join(
-            [
-                f"""
-                {project.get('name', '')}
-                {project.get('description', '')}
-                {' '.join(project.get('technologies', []))}
-                """
-                for project in profile.get("projects", [])
-            ]
-        )
+                [
+                    f"""
+                    {project.get('title', '')}
+                    {project.get('description', [])}
+                    {project.get('technologies', [])}
+                    """
+                    for project in profile.get("projects", [])
+                ]
+            )
+
 
         # ----------------------------
         # Education
@@ -145,5 +146,7 @@ def build_faiss_index():
             f
         )
 
+    
     print("\nFAISS Index Created Successfully")
     print(f"Total Resumes Indexed: {len(resume_names)}")
+
