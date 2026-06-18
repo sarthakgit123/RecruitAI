@@ -195,7 +195,7 @@ async def match_ui(
             jd
         )
          
-        cleanup()
+       
 
         return templates.TemplateResponse(
             request=request,
@@ -231,7 +231,7 @@ async def match_api(
             jd
         )
 
-        cleanup()
+
 
         return {
             "status": "success",

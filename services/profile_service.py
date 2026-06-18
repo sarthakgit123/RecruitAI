@@ -92,6 +92,17 @@ def profile_generate(pdf):
           the resume (e.g. address, contact section). If not mentioned,
           return "".
         - Output valid JSON only. No markdown, no commentary, no code fences.
+        - "experience" MUST include ONLY professional employment,
+          internships, freelance work, consulting work,
+          research assistantships, teaching assistantships,
+          and industry experience.
+        - Exclude extracurricular activities, campus leadership,
+          student organizations, volunteer positions,
+          club memberships, and college committees.
+        - Never place Training & Placement Cell roles,
+          student chapter roles, society positions,
+          club positions, or college leadership positions
+          inside "experience".
 
     Resume:
     {resume_text}

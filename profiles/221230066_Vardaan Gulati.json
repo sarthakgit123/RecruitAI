@@ -1,0 +1,115 @@
+{
+    "name": "Vardaan Gulati",
+    "email": "vardaangulati0@gmail.com",
+    "phone": "+91-8859321717",
+    "location": "",
+    "current_role": "Agent Architect Intern",
+    "total_experience_years": 0.5,
+    "skills": [
+        "Python",
+        "Java",
+        "C",
+        "React",
+        "LangChain",
+        "NumPy",
+        "Pandas",
+        "Matplotlib",
+        "MySQL",
+        "PowerBI",
+        "HTML/CSS",
+        "JavaScript",
+        "Object-Oriented Programming (OOPs)",
+        "Operating Systems (OS)",
+        "DBMS",
+        "Data Structures and Algorithms"
+    ],
+    "projects": [
+        {
+            "title": "IntellectMesh",
+            "technologies": [
+                "Model Context Protocol",
+                "React",
+                "A2A",
+                "FastAPI",
+                "MCP",
+                "ngrok"
+            ],
+            "description": [
+                "Developed a distributed Agentic AI system using FastAPI and MCP, enabling autonomous tools such as a scraper, critic, and LLM refiner to self-register, resolve each other dynamically, and collaborate through a structured A2A communication workflow.",
+                "Implemented remote agent orchestration using dynamic ngrok tunnels, allowing multi-machine integration of AI tools without requiring static IPs or manual network configuration."
+            ]
+        },
+        {
+            "title": "Mall Sphere",
+            "technologies": [
+                "Tailwind CSS",
+                "Express js",
+                "SQL",
+                "ShopSpectra"
+            ],
+            "description": [
+                "Designed and implemented ShopSpectra, a centralized Mall Management System for seven malls, enabling shop exploration and customer engagement with interactive dashboards.",
+                "Integrated a secure transaction repository and customer review system, ensuring transparency, security, and enhanced user engagement within the platform."
+            ]
+        },
+        {
+            "title": "BidMatch",
+            "technologies": [
+                "Chroma",
+                "LangChain",
+                "Hugging Face"
+            ],
+            "description": [
+                "Developed a tool to analyze RFPs, improving bid evaluation accuracy by 30%, matching user-defined conditions with company data, and presenting the top bids with detailed analysis.",
+                "Automated the comparison of bids, reducing processing time by 50% and highlighting the most relevant options based on both qualitative and quantitative criteria."
+            ]
+        }
+    ],
+    "education": [
+        {
+            "institution": "National Institute of Technology, Delhi",
+            "degree": "B.Tech - Major: Electrical Engineering; Minor: AI and ML",
+            "score": "CGPA: 7.51",
+            "year": "Nov 2022 – Present"
+        },
+        {
+            "institution": "Army Public School, Meerut",
+            "degree": "Senior Secondary School Certificate",
+            "score": "Percentage: 96.2%",
+            "year": "Apr 2020 – Mar 2022"
+        },
+        {
+            "institution": "St.Mary’s Academy, Meerut",
+            "degree": "Secondary School Certificate",
+            "score": "Percentage: 94.2%",
+            "year": "Apr 2019 – Mar 2020"
+        }
+    ],
+    "experience": [
+        {
+            "role": "Agent Architect Intern",
+            "company": "GlobalLogic",
+            "duration": "June 2025 – Aug 2025",
+            "start_date": "2025-06",
+            "end_date": "2025-08",
+            "description": [
+                "Developed MCP compliant tools and orchestrators that enabled scalable LLM-to-tool communication, reducing manual query handling by 70%.",
+                "Built A2A pipelines with FastAPI improving agent execution speed and response accuracy",
+                "Automated multi-agent workflows with critic evaluation and LLM refinement, boosting overall system efficiency and output quality by a factor of 0.8"
+            ]
+        },
+        {
+            "role": "Data Science and AI Intern",
+            "company": "Incedo Inc",
+            "duration": "June 2024 – Aug 2024",
+            "start_date": "2024-06",
+            "end_date": "2024-08",
+            "description": [
+                "Developed innovative GenAI and ML solutions using advanced ML algorithms, LLMs, RAG pipelines, and Transformer models, boosting NLP query response accuracy by 60%.",
+                "Enhanced data processing efficiency through Neural Network architectures and Lang Chain.",
+                "Spearheaded the development of brAIn spark, reducing query resolution time by 40% while ensuring secure handling of sensitive client data."
+            ]
+        }
+    ],
+    "experience_years_verified": true
+}
