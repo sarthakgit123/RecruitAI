@@ -1,14 +1,425 @@
+/* ============================================================
+   AI Resume Matcher — "Case File" system
+   Palette:
+     --paper       #EEEAE0  base stock
+     --paper-dark  #E2DCC8  inset / card stock
+     --ink         #23281F  primary text, near-black green ink
+     --pine        #2F4D3A  primary accent (folder tab, upload)
+     --rust        #C2632B  secondary accent (stamp, match CTA)
+     --line        #C9C2AE  hairline rules
+   Type:
+     Display — Big Shoulders Display (stenciled, stamped feel)
+     Body    — IBM Plex Sans
+     Data    — IBM Plex Mono (filenames, counters, JD body)
+   ============================================================ */
+
+:root{
+  --paper: #EEEAE0;
+  --paper-dark: #E2DCC8;
+  --ink: #23281F;
+  --pine: #2F4D3A;
+  --pine-dark: #213b2c;
+  --rust: #C2632B;
+  --rust-dark: #a14f22;
+  --line: #C9C2AE;
+  --radius: 3px;
+}
+
+*{ box-sizing: border-box; }
+
 body{
-    font-family:Arial;
-    width:900px;
-    margin:auto;
-    padding:20px;
+  margin: 0;
+  padding: 48px 20px 80px;
+  background: var(--paper);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(35,40,31,0.05) 1px, transparent 0);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  display: flex;
+  justify-content: center;
 }
 
-textarea{
-    width:100%;
+.visually-hidden-input{
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0; overflow: hidden;
 }
 
-button{
-    padding:10px;
+/* ---------- Folder shell ---------- */
+
+.folder{
+  width: 100%;
+  max-width: 760px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 0 var(--line), 0 18px 40px -28px rgba(35,40,31,0.5);
+  position: relative;
+}
+
+.folder::before{
+  /* die-cut tab notch at top-left, evokes a manila folder edge */
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 28px;
+  width: 120px;
+  height: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  clip-path: polygon(8% 100%, 0 0, 100% 0, 92% 100%);
+}
+
+.folder__header{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 34px 36px 26px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow{
+  margin: 0 0 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pine);
+}
+
+.folder__heading h1{
+  margin: 0;
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.folder__sub{
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #565d52;
+}
+
+.case-tab{
+  align-self: start;
+  text-align: right;
+  font-family: 'IBM Plex Mono', monospace;
+  border-left: 1px dashed var(--line);
+  padding-left: 14px;
+  white-space: nowrap;
+}
+
+.case-tab__label{
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a8273;
+}
+
+.case-tab__value{
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--pine);
+}
+
+/* ---------- Stamp signature ---------- */
+
+.stamp{
+  width: 88px;
+  height: 88px;
+  transform: rotate(-9deg);
+  flex-shrink: 0;
+}
+
+.stamp__svg{ width: 100%; height: 100%; }
+
+.stamp__ring{
+  fill: none;
+  stroke: var(--rust);
+}
+.stamp__ring--outer{ stroke-width: 2.5; }
+.stamp__ring--inner{ stroke-width: 1; opacity: 0.6; }
+
+.stamp__text{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  fill: var(--rust);
+  text-transform: uppercase;
+}
+
+.stamp__pct{
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 800;
+  font-size: 34px;
+  fill: var(--rust);
+}
+
+/* ---------- Exhibit sections ---------- */
+
+.exhibit{
+  padding: 30px 36px;
+}
+
+.exhibit__head{
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  margin-bottom: 18px;
+}
+
+.exhibit__index{
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  color: var(--line);
+  line-height: 1;
+}
+
+.exhibit h2{
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.exhibit__hint{
+  margin: 0;
+  font-size: 13px;
+  color: #6b7264;
+}
+
+/* ---------- Dropzone (upload) ---------- */
+
+.dropform{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dropzone{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 30px 20px;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-dark);
+  color: var(--pine);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone:hover{
+  border-color: var(--pine);
+}
+
+.dropzone--drag{
+  border-color: var(--pine);
+  background: #dfe7df;
+}
+
+.dropzone--filled{
+  border-style: solid;
+  border-color: var(--pine);
+}
+
+.dropzone__icon{
+  width: 30px;
+  height: 30px;
+  color: var(--pine);
+}
+
+.dropzone__text{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropzone__text strong{
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.dropzone__text span{
+  font-size: 12px;
+  color: #767d6c;
+}
+
+.dropzone__filename{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  color: var(--rust);
+  min-height: 16px;
+}
+
+/* ---------- Notepad (JD textarea) ---------- */
+
+.matchform{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notepad{
+  position: relative;
+  border: 1px solid var(--line);
+  background: #FAF8F1;
+  border-radius: var(--radius);
+  padding-left: 44px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.notepad::before{
+  /* red margin rule, legal-pad style */
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 32px;
+  width: 1px;
+  background: rgba(194, 99, 43, 0.35);
+}
+
+#jd{
+  width: 100%;
+  border: none;
+  background: transparent;
+  resize: vertical;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13.5px;
+  line-height: 26px;
+  color: var(--ink);
+  padding: 14px 16px 14px 8px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 25px,
+    var(--line) 25px,
+    var(--line) 26px
+  );
+}
+
+#jd:focus,
+.dropzone:focus-within{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(47, 77, 58, 0.25);
+}
+
+#jd::placeholder{
+  color: #9a9484;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn{
+  align-self: flex-start;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--paper);
+  border: none;
+  border-radius: var(--radius);
+  padding: 13px 22px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.btn:active{ transform: translateY(1px); }
+
+.btn:focus-visible{
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.btn--pine{ background: var(--pine); }
+.btn--pine:hover{ background: var(--pine-dark); }
+
+.btn--rust{ background: var(--rust); }
+.btn--rust:hover{ background: var(--rust-dark); }
+
+/* ---------- Divider between exhibits ---------- */
+
+.divider{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 36px;
+}
+
+.divider span:not(.divider__mark){
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.divider__mark{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--pine);
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Footer ---------- */
+
+.folder__footer{
+  padding: 18px 36px 28px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8a8273;
+  text-align: center;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 600px){
+  body{ padding: 28px 12px 60px; }
+
+  .folder__header{
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "stamp heading"
+      "tab   tab";
+    padding: 26px 20px 20px;
+  }
+  .stamp{ grid-area: stamp; width: 64px; height: 64px; }
+  .folder__heading{ grid-area: heading; }
+  .case-tab{
+    grid-area: tab;
+    text-align: left;
+    border-left: none;
+    border-top: 1px dashed var(--line);
+    padding: 10px 0 0;
+    margin-top: 10px;
+  }
+
+  .folder__heading h1{ font-size: 32px; }
+
+  .exhibit{ padding: 24px 20px; }
+  .divider{ padding: 0 20px; }
+  .folder__footer{ padding: 16px 20px 24px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .btn{ transition: none; }
 }
