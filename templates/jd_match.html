@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Matcher — JD Match</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<main class="folder">
+
+  <header class="folder__header">
+    <div class="stamp" aria-hidden="true">
+      <svg viewBox="0 0 200 200" class="stamp__svg">
+        <defs>
+          <path id="stampCircleJD" d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"/>
+        </defs>
+        <circle cx="100" cy="100" r="92" class="stamp__ring stamp__ring--outer"/>
+        <circle cx="100" cy="100" r="64" class="stamp__ring stamp__ring--inner"/>
+        <text class="stamp__text">
+          <textPath href="#stampCircleJD" startOffset="0%">
+            CANDIDATE MATCH SYSTEM &#8226; EST. PROCESS &#8226;
+          </textPath>
+        </text>
+        <text x="100" y="112" class="stamp__pct" text-anchor="middle">%</text>
+      </svg>
+    </div>
+
+    <div class="folder__heading">
+      <p class="eyebrow">Hiring Intelligence &#8212; Internal Use</p>
+      <h1>The&nbsp;Role&nbsp;Brief</h1>
+      <p class="folder__sub">Score every candidate in the pool against this description.</p>
+    </div>
+
+    <div class="case-tab">
+      <span class="case-tab__label">File No.</span>
+      <span class="case-tab__value">0042</span>
+    </div>
+  </header>
+
+  <section class="exhibit" aria-labelledby="exhibitB">
+    <div class="exhibit__head">
+      <span class="exhibit__index">02</span>
+      <div>
+        <h2 id="exhibitB">Exhibit B &#8212; The Role Brief</h2>
+        <p class="exhibit__hint">Paste the job description exactly as it will be read against every file in the pool.</p>
+      </div>
+    </div>
+
+    <form action="/match-ui" method="post" class="matchform">
+      <div class="notepad">
+        <textarea
+          name="jd"
+          id="jd"
+          rows="12"
+          placeholder="Paste the job description here&#10;&#10;e.g.&#10;Role: Backend Engineer&#10;Must-haves: Python, FastAPI, 3+ yrs&#10;Nice-to-haves: AWS, PostgreSQL"
+          required
+        ></textarea>
+      </div>
+      <button type="submit" class="btn btn--rust">Run Match&nbsp;&#10230;</button>
+    </form>
+  </section>
+
+  <footer class="folder__footer">
+    <span>Matches are scored, not promised.</span>
+  </footer>
+
+</main>
+
+</body>
+</html>

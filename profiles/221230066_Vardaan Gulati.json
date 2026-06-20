@@ -27,7 +27,6 @@
         {
             "title": "IntellectMesh",
             "technologies": [
-                "Model Context Protocol",
                 "React",
                 "A2A",
                 "FastAPI",
@@ -44,8 +43,7 @@
             "technologies": [
                 "Tailwind CSS",
                 "Express js",
-                "SQL",
-                "ShopSpectra"
+                "SQL"
             ],
             "description": [
                 "Designed and implemented ShopSpectra, a centralized Mall Management System for seven malls, enabling shop exploration and customer engagement with interactive dashboards.",
@@ -69,20 +67,20 @@
         {
             "institution": "National Institute of Technology, Delhi",
             "degree": "B.Tech - Major: Electrical Engineering; Minor: AI and ML",
-            "score": "CGPA: 7.51",
-            "year": "Nov 2022 – Present"
+            "score": "7.51 CGPA",
+            "year": ""
         },
         {
             "institution": "Army Public School, Meerut",
             "degree": "Senior Secondary School Certificate",
-            "score": "Percentage: 96.2%",
-            "year": "Apr 2020 – Mar 2022"
+            "score": "96.2%",
+            "year": "2022"
         },
         {
             "institution": "St.Mary’s Academy, Meerut",
             "degree": "Secondary School Certificate",
-            "score": "Percentage: 94.2%",
-            "year": "Apr 2019 – Mar 2020"
+            "score": "94.2%",
+            "year": "2020"
         }
     ],
     "experience": [

@@ -29,6 +29,20 @@ from services.upload_service import (
     process_uploaded_zip
 )
 
+from services.pdf_service import (
+    process_all_resumes
+)
+
+from services.faiss_service import (
+    build_faiss_index
+)
+
+from services.Chatbot_index_service import (
+    build_chatbot_index
+)
+
+from chatbot_routes import router as chatbot_router
+
 import zipfile
 import shutil
 
@@ -36,6 +50,12 @@ app = FastAPI(
     title="AI Resume JD Matcher",
     version="1.0.0"
 )
+
+# -----------------------------
+# Chatbot routes
+# -----------------------------
+
+app.include_router(chatbot_router)
 
 # -----------------------------
 # CORS
@@ -122,6 +142,21 @@ async def home(request: Request):
     )
 
 # -----------------------------
+# JD Match Page
+# -----------------------------
+
+@app.get("/jd-match")
+async def jd_match_page(request: Request):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="jd_match.html",
+        context={
+            "title": "JD Match"
+        }
+    )
+
+# -----------------------------
 # Upload Resumes
 # -----------------------------
 
@@ -164,12 +199,36 @@ async def upload_zip(
                 "uploads/resumes"
             )
 
+        # Parse every resume PDF into structured JSON (profiles/*.json).
+        # This also runs the experience-years verification step inside
+        # profile_service.py, so total_experience_years is trustworthy
+        # by the time either the JD-matcher or the chatbot reads it.
+        process_all_resumes()
+
+        # Build the JD-matcher's whole-resume FAISS index
+        # (faiss_db/resume_index.faiss). Previously this ran inside
+        # match_service.py on every JD submission - moved here so it
+        # only runs once, right after upload, instead of on every match.
+        build_faiss_index()
+
+        # Build the chatbot's separate chunked FAISS index
+        # (faiss_db/chatbot_index.faiss) from the same JSON profiles.
+        # This is a different index from the one above - the JD-matcher
+        # needs one vector per whole resume, the chatbot needs section-
+        # level chunks for precise retrieval. Building both here means
+        # the chatbot is immediately usable even if the user never runs
+        # a JD match.
+        build_chatbot_index()
+
+        profile_count = len([
+            f for f in os.listdir("profiles") if f.endswith(".json")
+        ]) if os.path.isdir("profiles") else 0
+
         return templates.TemplateResponse(
             request=request,
-            name="upload_success.html",
+            name="fork.html",
             context={
-                "result":
-                "ZIP uploaded successfully"
+                "count": profile_count
             }
         )
 

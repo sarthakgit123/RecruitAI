@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Matcher — Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/chat.css">
+</head>
+<body>
+
+<main class="folder folder--chat">
+
+  <header class="folder__header">
+    <div class="stamp" aria-hidden="true">
+      <svg viewBox="0 0 200 200" class="stamp__svg">
+        <defs>
+          <path id="stampCircleChat" d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"/>
+        </defs>
+        <circle cx="100" cy="100" r="92" class="stamp__ring stamp__ring--outer"/>
+        <circle cx="100" cy="100" r="64" class="stamp__ring stamp__ring--inner"/>
+        <text class="stamp__text">
+          <textPath href="#stampCircleChat" startOffset="0%">
+            CANDIDATE MATCH SYSTEM &#8226; INTERVIEW ROOM &#8226;
+          </textPath>
+        </text>
+        <text x="100" y="112" class="stamp__pct" text-anchor="middle">Q&amp;A</text>
+      </svg>
+    </div>
+
+    <div class="folder__heading">
+      <p class="eyebrow">Hiring Intelligence &#8212; Internal Use</p>
+      <h1>The&nbsp;Interview</h1>
+      <p class="folder__sub">Cross-examine the whole candidate pool at once.</p>
+    </div>
+
+    <div class="case-tab">
+      <span class="case-tab__label">File No.</span>
+      <span class="case-tab__value">0042</span>
+    </div>
+  </header>
+
+  <section class="exhibit exhibit--chat" aria-labelledby="exhibitC">
+    <div class="exhibit__head">
+      <span class="exhibit__index">03</span>
+      <div>
+        <h2 id="exhibitC">Exhibit C &#8212; The Interview</h2>
+        <p class="exhibit__hint">Ask anything about skills, experience, or fit — across every resume in the pool.</p>
+      </div>
+      <button type="button" id="reset-btn" class="btn btn--ghost">Reopen Case</button>
+    </div>
+
+    <div class="interview-room">
+      <div class="transcript" id="chat-window">
+        <div class="entry entry--bot">
+          <span class="entry__tag">SUBJECT FILE</span>
+          <div class="entry__bubble">
+            Ask me anything about the uploaded resumes — for example
+            &#8220;who knows Python&#8221;, &#8220;who has 2+ years experience&#8221;, or
+            &#8220;who would be a good fit for a backend role&#8221;.
+          </div>
+        </div>
+      </div>
+
+      <form id="chat-form" class="interrogate-form">
+        <div class="notepad notepad--chat">
+          <input
+            type="text"
+            id="question-input"
+            name="question"
+            placeholder="Type your question for the file&#8230;"
+            autocomplete="off"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn--rust" id="send-btn">Ask&nbsp;&#10230;</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="folder__footer">
+    <span>Answers are grounded in the file. No candidate is invented.</span>
+  </footer>
+
+</main>
+
+<script src="/static/chat.js"></script>
+</body>
+</html>

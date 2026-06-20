@@ -1,0 +1,211 @@
+/* ============================================================
+   AI Resume Matcher — Chat ("The Interview")
+   Extends style.css — relies on the same --paper / --ink / --pine /
+   --rust / --line variables already defined there. Loaded AFTER
+   style.css, so this file only adds what's new for the chat view.
+   ============================================================ */
+
+.folder--chat{
+  display: flex;
+  flex-direction: column;
+}
+
+.exhibit--chat{
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.exhibit--chat .exhibit__head{
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.exhibit--chat .exhibit__head > div{
+  flex: 1;
+}
+
+/* ---------- Ghost button (Reopen Case / reset) ---------- */
+
+.btn--ghost{
+  background: transparent;
+  color: var(--pine);
+  border: 1px solid var(--line);
+  align-self: flex-start;
+}
+
+.btn--ghost:hover{
+  background: var(--paper-dark);
+  border-color: var(--pine);
+}
+
+/* ---------- Interview room shell ---------- */
+
+.interview-room{
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  background: #FAF8F1;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* ---------- Transcript (message list) ---------- */
+
+.transcript{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 26px 28px;
+  max-height: 480px;
+  min-height: 280px;
+  overflow-y: auto;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    var(--line) 31px,
+    var(--line) 32px
+  );
+}
+
+.entry{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 82%;
+}
+
+.entry--user{
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.entry--bot{
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.entry__tag{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a8273;
+  padding: 0 2px;
+}
+
+.entry--user .entry__tag{
+  color: var(--rust);
+}
+
+.entry__bubble{
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  white-space: pre-wrap;
+}
+
+.entry--bot .entry__bubble{
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-bottom-left-radius: 0;
+}
+
+.entry--user .entry__bubble{
+  background: var(--pine);
+  color: var(--paper);
+  border-bottom-right-radius: 0;
+}
+
+.entry__bubble.is-loading{
+  font-style: italic;
+  color: #8a8273;
+}
+
+.entry--bot .entry__bubble.is-error{
+  background: #f3e3da;
+  border-color: var(--rust);
+  color: var(--rust-dark);
+}
+
+/* ---------- Question input row ---------- */
+
+.interrogate-form{
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 18px 28px;
+  border-top: 1px solid var(--line);
+  background: var(--paper-dark);
+}
+
+.notepad--chat{
+  flex: 1;
+  padding-left: 0;
+  background: #FAF8F1;
+}
+
+.notepad--chat::before{
+  display: none;
+}
+
+#question-input{
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #FAF8F1;
+  border-radius: var(--radius);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13.5px;
+  color: var(--ink);
+  padding: 12px 14px;
+}
+
+#question-input::placeholder{
+  color: #9a9484;
+}
+
+#question-input:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(47, 77, 58, 0.25);
+  border-color: var(--pine);
+}
+
+#send-btn:disabled{
+  background: #b9ad97;
+  cursor: not-allowed;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 600px){
+  .exhibit--chat .exhibit__head{
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn--ghost{
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .transcript{
+    max-height: 60vh;
+    padding: 20px 18px;
+  }
+
+  .entry{ max-width: 92%; }
+
+  .interrogate-form{
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 18px;
+  }
+
+  #send-btn{
+    align-self: stretch;
+    text-align: center;
+  }
+}

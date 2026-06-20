@@ -26,7 +26,7 @@ from google import genai
 from google.genai import errors as genai_errors
 from dotenv import load_dotenv
 
-from chatbot_retrieval import retrieve
+from services.chatbot_retrieval import retrieve
 
 load_dotenv()
 
@@ -151,7 +151,7 @@ def generate_answer(question, retrieval_result, history=None):
     - Refer to candidates by name.
     - Be concise and direct.
 
-    {f"Recent conversation:\n{history_text}\n" if history_text else ""}
+    {f"Recent conversation:{history_text}" if history_text else ""}
     Candidate information retrieved for this question:
     {context_text}
 

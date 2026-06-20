@@ -1,178 +1,196 @@
-# AI-Powered Resume Screening & ATS Ranking System
+# AI Resume–JD Matcher & Chatbot
 
-An intelligent resume screening platform that leverages semantic embeddings, vector search, and Large Language Models (LLMs) to evaluate candidate-job fit beyond traditional keyword matching.
+An AI-powered hiring assistant that does two things with a single pool of resumes:
 
-The system analyzes resumes against job descriptions, computes ATS-style match scores, identifies skill gaps, ranks candidates, and generates explainable hiring insights using AI.
+1. **JD Matching** — score every resume against a job description and rank candidates by similarity.
+2. **Resume Chatbot (RAG)** — ask free-form questions across the whole candidate pool ("who knows Python", "who has 2+ years experience", "who'd be a good fit for a backend role") and get grounded, multi-candidate answers.
+
+Built with **FastAPI**, **Gemini** (resume parsing + chat reasoning), **Sentence-Transformers** (embeddings), and **FAISS** (vector search).
+
+---
+
+## How it works
+
+```
+Upload .zip of resumes
+        │
+        ▼
+Parse each PDF → structured JSON (Gemini)
+        │
+        ▼
+Verify experience years in plain Python (don't trust LLM math blindly)
+        │
+        ├──► Build whole-resume FAISS index ──► JD Matcher
+        │
+        └──► Chunk by section (skills / project / experience / education)
+                     │
+                     ▼
+             Build chunked FAISS index ──► Resume Chatbot (RAG)
+```
+
+After upload, the user picks one of two paths:
+
+- **JD Match** — paste a job description, get the top candidates ranked by similarity.
+- **Chatbot** — ask anything about the pool. Each question runs through:
+  1. **Intent extraction** (Gemini) — pulls out hard filters (skill / min years / role) and a semantic remainder.
+  2. **Metadata filtering** (plain Python) — exact filtering on the verified, structured resume data. No AI guesswork for numbers.
+  3. **FAISS semantic search** — restricted to the filtered candidate pool, for the fuzzy/open-ended part of the question.
+  4. **Answer generation** (Gemini) — grounded only in the retrieved context, instructed to consider every relevant candidate, not just one.
+
+This hybrid design exists because pure vector similarity is bad at exact constraints ("3+ years of experience"), and pure keyword filtering can't handle open-ended judgment questions ("who'd be a good fit for this role"). Combining both gives accurate answers for both cases.
 
 ---
 
 ## Features
 
-### Semantic Resume Matching
-
-* Uses transformer-based embeddings to capture contextual meaning.
-* Matches resumes with job descriptions beyond exact keyword overlap.
-* Handles skill synonyms and related technologies effectively.
-
-### ATS Score Generation
-
-* Calculates resume-job compatibility scores.
-* Evaluates skill alignment and keyword coverage.
-* Provides recruiter-friendly scoring metrics.
-
-### Candidate Ranking
-
-* Indexes resumes using FAISS vector search.
-* Retrieves Top-K most relevant candidates.
-* Supports bulk resume evaluation and comparison.
-
-### Skill Gap Analysis
-
-* Detects missing skills required by the job description.
-* Highlights strengths and weaknesses in candidate profiles.
-* Provides actionable improvement recommendations.
-
-### AI-Powered Explanations
-
-* Uses Gemini API to generate:
-
-  * Candidate-fit summaries
-  * Skill-gap insights
-  * Match reasoning
-  * Resume improvement suggestions
-
-### Fast Resume Processing
-
-* PDF resume ingestion and parsing.
-* Embedding generation and vector indexing.
-* Real-time candidate ranking and scoring.
+- Upload a single `.zip` of resumes — any number of PDFs.
+- Automatic parsing into structured JSON via Gemini (name, skills, projects, education, experience).
+- Self-verified experience calculation — total years of experience are recomputed in Python from each role's start/end dates, rather than trusting the LLM's arithmetic.
+- JD Matcher — paste a job description, get ranked candidates by cosine similarity.
+- Resume Chatbot — cross-resume question answering with:
+  - Exact skill / experience / role filtering
+  - Open-ended fit and comparison reasoning
+  - Conversation history for natural follow-ups
+  - Honest "no candidates match" responses instead of hallucinated answers
+- Clean separation between the two FAISS indexes — one tuned for whole-resume JD matching, one chunked by section for precise chatbot retrieval.
+- Resilient to transient Gemini API overload (503) with automatic retry + backoff.
 
 ---
 
-## System Architecture
+## Tech stack
 
-```text
-Resume PDFs
-      │
-      ▼
- Resume Parser
-      │
-      ▼
-Embedding Generation
-(Sentence Transformers)
-      │
-      ▼
- FAISS Vector Store
-      │
-      ▼
-Similarity Search
-      │
-      ▼
-ATS Scoring Engine
-      │
-      ▼
- Gemini Analysis
-      │
-      ▼
-Final Candidate Ranking
+| Layer | Tool |
+|---|---|
+| Backend | FastAPI |
+| Templates | Jinja2 |
+| Resume parsing | Gemini API (`gemini-2.5-flash`) |
+| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
+| Vector search | FAISS (`IndexFlatIP`, cosine similarity via L2-normalized vectors) |
+| PDF text extraction | PyMuPDF |
+| Frontend | Vanilla HTML / CSS / JS (no framework) |
+
+---
+
+## Project structure
+
+```
+AI-Resume-JD-Matcher/
+├── app.py                       # FastAPI app entrypoint, routes
+├── chatbot_routes.py             # /chat, /chat-api, /chat-reset routes
+├── services/
+│   ├── __init__.py
+│   ├── pdf_service.py             # Extracts all resumes in a zip → JSON profiles
+│   ├── profile_service.py         # Gemini PDF → structured JSON parsing
+│   ├── experience_utils.py        # Python-side verification of total experience years
+│   ├── faiss_service.py           # Builds the JD-matcher's whole-resume FAISS index
+│   ├── match_service.py           # Searches the JD-matcher index against a job description
+│   ├── chatbot_index_service.py   # Builds the chatbot's chunked FAISS index
+│   ├── chatbot_retrieval.py       # Intent extraction + hybrid filtering + semantic search
+│   └── chatbot_service.py         # Final answer generation + chat history
+├── templates/
+│   ├── index.html                 # Upload page (Exhibit A)
+│   ├── fork.html                  # Post-upload choice: JD Match or Chatbot
+│   ├── jd_match.html              # Job description input (Exhibit B)
+│   ├── results.html                # JD match results
+│   └── chat.html                   # Chatbot interface (Exhibit C)
+├── static/
+│   ├── style.css                   # Shared "case file" design system
+│   ├── fork.css
+│   └── chat.css / chat.js
+├── uploads/                        # Uploaded zips + extracted resumes (gitignored)
+├── profiles/                        # Parsed resume JSON (gitignored)
+├── faiss_db/                        # Both FAISS indexes + metadata (gitignored)
+├── .env                              # GEMINI_API_KEY (gitignored)
+└── requirements.txt
 ```
 
 ---
 
-## Tech Stack
+## Setup
 
-### Backend
+### 1. Clone and create a virtual environment
 
-* Python
-* FastAPI
+```bash
+git clone <your-repo-url>
+cd AI-Resume-JD-Matcher
+python -m venv venv
+venv\Scripts\activate        # Windows
+source venv/bin/activate     # macOS/Linux
+```
 
-### AI / Machine Learning
+### 2. Install dependencies
 
-* Sentence Transformers
-* NLP
-* Semantic Embeddings
-* Vector Search
+```bash
+pip install -r requirements.txt
+```
 
-### Retrieval
+### 3. Add your Gemini API key
 
-* FAISS
+Create a `.env` file in the project root:
 
-### LLM
+```
+GEMINI_API_KEY=your_api_key_here
+```
 
-* Google Gemini API
+Get a key from [Google AI Studio](https://aistudio.google.com/).
 
-### Data Processing
+### 4. Run the app
 
-* PDF Parsing
-* Text Extraction
+```bash
+uvicorn app:app --reload
+```
 
----
-
-## Example Workflow
-
-1. Upload multiple resumes.
-2. Enter a job description.
-3. Generate semantic embeddings.
-4. Search candidates using FAISS similarity search.
-5. Calculate ATS match scores.
-6. Identify missing skills.
-7. Generate AI-powered explanations.
-8. Display ranked candidate list.
+Visit **http://127.0.0.1:8000**.
 
 ---
 
-## Sample Output
+## Usage
 
-```text
-Candidate: John Doe
+1. **Upload a pool** — zip up resume PDFs, upload on the home page.
+2. The app parses every resume, verifies experience numbers, and builds both FAISS indexes automatically.
+3. **Choose a path:**
+   - **Run JD Match** → paste a job description → get ranked candidates.
+   - **Open the Interview** → ask the chatbot anything about the pool.
 
-ATS Match Score: 89%
+### Example chatbot questions
 
-Matched Skills:
-✓ Python
-✓ FastAPI
-✓ SQL
-✓ REST APIs
-
-Missing Skills:
-✗ Docker
-✗ AWS
-
-AI Summary:
-Strong backend candidate with relevant API development
-experience and database knowledge. Consider improving
-cloud deployment skills.
+```
+Who knows Python?
+Who has 2+ years of experience?
+Who has worked as an intern?
+Who would be a good fit for a backend role?
+I need a candidate to build an LLM-based platform. Who should I hire and why?
 ```
 
 ---
 
-## Future Enhancements
+## Design notes
 
-* Multi-JD candidate matching
-* Resume recommendation engine
-* Recruiter dashboard
-* Interview question generation
-* Candidate clustering
-* Hybrid Search (BM25 + Semantic Search)
-* Analytics dashboard
-* Resume optimization assistant
+**Why two separate FAISS indexes?**
+The JD-matcher needs a holistic, whole-resume comparison against a job description — one vector per resume. The chatbot needs precision at the section level (skills vs. a specific project vs. a specific role), so it's chunked into multiple vectors per resume. Reusing one index for both jobs would hurt one use case or the other.
 
----
+**Why verify experience years in Python instead of trusting Gemini's number?**
+LLM arithmetic on dates isn't reliable enough to filter candidates on. `experience_utils.py` recomputes total experience from each role's `start_date`/`end_date` and only falls back to Gemini's self-reported figure when dates are missing or unparseable.
 
-## Key Highlights
-
-* Semantic Matching using Transformer Embeddings
-* Explainable AI-based Candidate Evaluation
-* ATS Score Generation
-* Skill Gap Detection
-* Top-K Candidate Retrieval using FAISS
-* LLM-Powered Hiring Insights
-* Scalable FastAPI Backend
+**Why hybrid retrieval instead of pure RAG or pure filtering?**
+Pure vector search struggles with exact constraints like "3+ years experience." Pure keyword filtering can't reason about open-ended questions like "who'd be a good culture fit." Combining hard metadata filters with semantic search on the filtered pool gets the best of both.
 
 ---
 
-## Author
+## Known limitations
 
-**Sarthak Kumar Seth**
+- **Free-tier Gemini quota** is limited (20–250 requests/day depending on model and tier as of writing). Heavy testing can exhaust it quickly — each chatbot question costs 2 Gemini calls (intent extraction + answer generation), and each resume upload costs 1 call per resume.
+- **Chat history is in-memory and global**, not per-session — fine for solo use/demos, but concurrent users would share one conversation history.
+- **Re-uploading a zip rebuilds everything from scratch** — there's no incremental indexing yet.
+- Designed and tested at a scale of **50–300 resumes**; not yet optimized for much larger pools.
 
-GitHub: https://github.com/sarthakgit123
+---
+
+## Roadmap ideas
+
+- [ ] Per-session chat history (so multiple users don't share one conversation)
+- [ ] Incremental indexing (only re-parse new/changed resumes)
+- [ ] Support multiple skills per filter query (e.g. "LangChain and LangGraph")
+- [ ] Swap to `gemini-2.5-flash-lite` or combine intent extraction + answer generation into one call to reduce quota usage
+- [ ] Async upload processing with a progress indicator for large pools
+

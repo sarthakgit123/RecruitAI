@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Matcher — Choose Path</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/fork.css">
+</head>
+<body>
+
+<main class="folder folder--fork">
+
+  <header class="folder__header">
+    <div class="stamp" aria-hidden="true">
+      <svg viewBox="0 0 200 200" class="stamp__svg">
+        <defs>
+          <path id="stampCircleFork" d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"/>
+        </defs>
+        <circle cx="100" cy="100" r="92" class="stamp__ring stamp__ring--outer"/>
+        <circle cx="100" cy="100" r="64" class="stamp__ring stamp__ring--inner"/>
+        <text class="stamp__text">
+          <textPath href="#stampCircleFork" startOffset="0%">
+            CANDIDATE MATCH SYSTEM &#8226; INTAKE COMPLETE &#8226;
+          </textPath>
+        </text>
+        <text x="100" y="112" class="stamp__pct" text-anchor="middle">&#10003;</text>
+      </svg>
+    </div>
+
+    <div class="folder__heading">
+      <p class="eyebrow">Hiring Intelligence &#8212; Internal Use</p>
+      <h1>Pool&nbsp;Intake&nbsp;Logged</h1>
+      <p class="folder__sub">
+        {% if count %}{{ count }} resume{{ "s" if count != 1 else "" }} processed and ready.{% else %}Resumes processed and ready.{% endif %}
+      </p>
+    </div>
+
+    <div class="case-tab">
+      <span class="case-tab__label">File No.</span>
+      <span class="case-tab__value">0042</span>
+    </div>
+  </header>
+
+  <section class="fork-section">
+    <p class="fork-section__lede">Choose how to proceed with this pool.</p>
+
+    <div class="fork-grid">
+
+      <a href="/jd-match" class="fork-card fork-card--pine">
+        <span class="fork-card__index">01</span>
+        <h2>Run JD Match</h2>
+        <p>Paste a job description and get every candidate scored against it.</p>
+        <span class="fork-card__cta">Go to Exhibit B&nbsp;&#10230;</span>
+      </a>
+
+      <a href="/chat" class="fork-card fork-card--rust">
+        <span class="fork-card__index">02</span>
+        <h2>Open the Interview</h2>
+        <p>Ask free-form questions across the whole pool — skills, experience, fit.</p>
+        <span class="fork-card__cta">Go to Exhibit C&nbsp;&#10230;</span>
+      </a>
+
+    </div>
+  </section>
+
+  <footer class="folder__footer">
+    <span>Both paths read from the same file. Nothing is re-uploaded.</span>
+  </footer>
+
+</main>
+
+</body>
+</html>

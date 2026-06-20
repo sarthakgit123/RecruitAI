@@ -3,17 +3,21 @@ import pickle
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from services.pdf_service import process_all_resumes
-from services.faiss_service import build_faiss_index
-
 
 def process_resumes_and_match(jd):
+    """
+    Searches the existing resume_index.faiss (built once at upload time
+    in app.py, alongside the chatbot's chatbot_index.faiss) against the
+    given job description.
 
-    # Generate profiles from PDFs
-    process_all_resumes()
-
-    # Create embeddings + FAISS index
-    build_faiss_index()
+    NOTE: this function used to call process_all_resumes() and
+    build_faiss_index() itself on every match - that meant every JD
+    submission re-parsed every resume PDF through Gemini from scratch,
+    which is slow and burns API quota for no reason since the resumes
+    haven't changed since upload. Parsing + indexing now happens once,
+    right after the zip upload (see app.py's /upload-zip route), and
+    this function just searches the index that's already there.
+    """
 
     # Load FAISS index
     index = faiss.read_index(

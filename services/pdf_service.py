@@ -1,7 +1,7 @@
 import os
 import json
 
-from profile_service import (
+from services.profile_service import (
     profile_generate
 )
 
