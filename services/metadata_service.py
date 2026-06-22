@@ -37,6 +37,3 @@ def build_metadata():
 
     print(f"Saved {len(candidates)} candidates")
 
-
-if __name__ == "__main__":
-    build_metadata()

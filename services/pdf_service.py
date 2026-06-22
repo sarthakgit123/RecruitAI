@@ -11,7 +11,7 @@ from services.profile_service import (
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
 
-UPLOADS_DIR = os.path.join(PROJECT_ROOT, "uploads", "resumes", "resumes")
+UPLOADS_DIR = os.path.join(PROJECT_ROOT, "uploads", "resumes",)
 PROFILES_DIR = os.path.join(PROJECT_ROOT, "profiles")
 
 
@@ -88,6 +88,3 @@ def process_all_resumes():
         "\nAll resumes processed."
     )
 
-
-if __name__ == "__main__":
-    process_all_resumes()

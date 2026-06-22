@@ -137,10 +137,3 @@ def profile_generate(pdf):
 
     return profile
 
-
-if __name__ == "__main__":
-    # Quick manual test
-    import sys
-    if len(sys.argv) > 1:
-        result = profile_generate(sys.argv[1])
-        print(json.dumps(result, indent=2))
