@@ -1,48 +1,200 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Results</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecruitAI — Match Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>Top Candidates</h1>
+<main class="folder">
 
-{% if error %}
+  <header class="folder__header">
+    <div class="folder__heading">
+      <p class="eyebrow">Hiring Intelligence Platform</p>
+      <h1>RecruitAI</h1>
+      <p class="folder__sub">Candidates ranked by multi-factor hybrid match scoring engine.</p>
+    </div>
 
-<p>{{ error }}</p>
+    <div class="case-tab">
+      <span class="case-tab__label">Ranked</span>
+      <span class="case-tab__value">{% if results %}{{ results|length }}{% else %}0{% endif %}</span>
+    </div>
+  </header>
 
-{% endif %}
+  <section class="exhibit" aria-labelledby="exhibitResults">
+    <div class="exhibit__head">
+      <div>
+        <h2 id="exhibitResults">Hybrid Match Rankings &amp; Explanations</h2>
+        <p class="exhibit__hint">Multi-factor score: Semantic (25%), Skills (35%), Experience (20%), Projects (10%), Keywords (10%).</p>
+      </div>
+    </div>
 
-{% if results %}
+    {% if jd %}
+    <div class="results-summary">
+      <p class="results-summary__title">Job Description Evaluated:</p>
+      <p class="results-summary__query">{{ jd }}</p>
+    </div>
+    {% endif %}
 
-{% for candidate in results %}
+    {% if error %}
+    <div class="results-summary" style="border-color: var(--rust); background: rgba(194,99,43,0.1);">
+      <p class="results-summary__title" style="color: var(--rust);">Processing Error</p>
+      <p class="results-summary__query" style="color: var(--rust-dark);">{{ error }}</p>
+    </div>
+    {% endif %}
 
-<div>
+    {% if results %}
+    <div class="results-list">
+      {% for candidate in results %}
+      <div class="result-card result-card--expandable">
+        <div class="result-card__main">
+          <div class="result-card__info">
+            <span class="result-card__rank">0{{ candidate.rank }}</span>
+            <div class="result-card__details">
+              <h3 class="result-card__name">
+                {{ candidate.candidate_name or candidate.resume }}
+                {% if candidate.experience_years %}
+                <span class="meta-tag">{{ candidate.experience_years }} yrs exp</span>
+                {% endif %}
+              </h3>
 
-    <h3>
-        {{ candidate.resume }}
-    </h3>
+              <div class="score-bar">
+                <div
+                  class="score-bar__fill {% if candidate.similarity >= 65 %}score-bar__fill--high{% else %}score-bar__fill--mid{% endif %}"
+                  style="width: {{ candidate.similarity }}%;"
+                ></div>
+              </div>
 
-    <p>
-        Similarity:
-        {{ candidate.similarity }}%
-    </p>
+              {% if candidate.breakdown %}
+              <div class="subscore-row">
+                <span class="subscore-pill">Vector: {{ candidate.breakdown.semantic }}%</span>
+                <span class="subscore-pill">Skills: {{ candidate.breakdown.skills }}%</span>
+                <span class="subscore-pill">Exp: {{ candidate.breakdown.experience }}%</span>
+                <span class="subscore-pill">Proj: {{ candidate.breakdown.projects }}%</span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
 
-</div>
+          <div class="score-badge {% if candidate.similarity >= 65 %}score-badge--high{% else %}score-badge--mid{% endif %}">
+            {{ candidate.similarity }}%
+          </div>
+        </div>
 
-<hr>
+        <!-- Toggle Button for Insights -->
+        <button type="button" class="btn-toggle-details" onclick="toggleDetails(this)">
+          Show Candidate Insights &amp; Breakdown
+        </button>
 
-{% endfor %}
+        <!-- Detailed Breakdown Section -->
+        <div class="result-card__breakdown" style="display: none;">
+          
+          {% if candidate.explanation %}
+          <div class="explanation-box">
+            <strong>Recruiter Ranking Summary:</strong>
+            <p>{{ candidate.explanation }}</p>
+          </div>
+          {% endif %}
 
-{% else %}
+          <div class="details-grid">
+            <!-- Matched Skills -->
+            <div class="detail-block">
+              <span class="detail-block__title" style="color: var(--pine);">Matched Skills:</span>
+              {% if candidate.matched_skills %}
+              <div class="tag-cloud">
+                {% for skill in candidate.matched_skills %}
+                <span class="tag tag--matched">{{ skill }}</span>
+                {% endfor %}
+              </div>
+              {% else %}
+              <span class="none-text">None listed</span>
+              {% endif %}
+            </div>
 
-<p>No matching resumes found.</p>
+            <!-- Missing Skills -->
+            <div class="detail-block">
+              <span class="detail-block__title" style="color: var(--rust);">Missing Skills:</span>
+              {% if candidate.missing_skills %}
+              <div class="tag-cloud">
+                {% for skill in candidate.missing_skills %}
+                <span class="tag tag--missing">{{ skill }}</span>
+                {% endfor %}
+              </div>
+              {% else %}
+              <span class="none-text">No critical missing skills</span>
+              {% endif %}
+            </div>
+          </div>
 
-{% endif %}
+          <div class="details-grid" style="margin-top: 14px;">
+            <!-- Strengths -->
+            <div class="detail-block">
+              <span class="detail-block__title">Key Strengths:</span>
+              {% if candidate.strengths %}
+              <ul class="insight-list insight-list--strength">
+                {% for st in candidate.strengths %}
+                <li>{{ st }}</li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </div>
 
-<a href="/">
-Back to Home
-</a>
+            <!-- Weaknesses -->
+            <div class="detail-block">
+              <span class="detail-block__title">Potential Gaps:</span>
+              {% if candidate.weaknesses %}
+              <ul class="insight-list insight-list--gap">
+                {% for wk in candidate.weaknesses %}
+                <li>{{ wk }}</li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="results-summary" style="text-align: center; padding: 32px 20px;">
+      <p class="results-summary__query">No matching resumes found in the uploaded pool.</p>
+    </div>
+    {% endif %}
+
+    <div class="action-row">
+      <a href="/jd-match" class="btn btn--pine">Run Another Match &rarr;</a>
+      <a href="/chat" class="btn btn--rust">Open Candidate Chat &rarr;</a>
+      <a href="/" class="btn btn--outline">&larr; Upload New Pool</a>
+    </div>
+  </section>
+
+  <footer class="folder__footer">
+    <span>RecruitAI Engine</span>
+    <span>Hybrid Scoring Complete</span>
+  </footer>
+
+</main>
+
+<script>
+  function toggleDetails(btn) {
+    const card = btn.closest('.result-card');
+    const breakdown = card.querySelector('.result-card__breakdown');
+    
+    if (breakdown.style.display === 'none' || !breakdown.style.display) {
+      breakdown.style.display = 'block';
+      btn.innerHTML = 'Hide Candidate Insights &amp; Breakdown';
+    } else {
+      breakdown.style.display = 'none';
+      btn.innerHTML = 'Show Candidate Insights &amp; Breakdown';
+    }
+  }
+</script>
 
 </body>
 </html>

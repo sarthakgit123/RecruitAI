@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Resume Matcher</title>
+<title>RecruitAI — Candidate Pool Intake</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,52 +14,35 @@
 <main class="folder">
 
   <header class="folder__header">
-    <div class="stamp" aria-hidden="true">
-      <svg viewBox="0 0 200 200" class="stamp__svg">
-        <defs>
-          <path id="stampCircle" d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"/>
-        </defs>
-        <circle cx="100" cy="100" r="92" class="stamp__ring stamp__ring--outer"/>
-        <circle cx="100" cy="100" r="64" class="stamp__ring stamp__ring--inner"/>
-        <text class="stamp__text">
-          <textPath href="#stampCircle" startOffset="0%">
-            CANDIDATE MATCH SYSTEM &#8226; EST. PROCESS &#8226;
-          </textPath>
-        </text>
-        <text x="100" y="112" class="stamp__pct" text-anchor="middle">%</text>
-      </svg>
-    </div>
-
     <div class="folder__heading">
-      <p class="eyebrow">Hiring Intelligence &#8212; Internal Use</p>
-      <h1>AI&nbsp;Resume&nbsp;Matcher</h1>
-      <p class="folder__sub">Upload the pool to begin the case.</p>
+      <p class="eyebrow">Hiring Intelligence Platform</p>
+      <h1>RecruitAI</h1>
+      <p class="folder__sub">Upload your candidate resume pool (.zip) to begin processing.</p>
     </div>
 
     <div class="case-tab">
-      <span class="case-tab__label">File No.</span>
-      <span class="case-tab__value">0042</span>
+      <span class="case-tab__label">System</span>
+      <span class="case-tab__value">v1.0</span>
     </div>
   </header>
 
   <section class="exhibit" aria-labelledby="exhibitA">
     <div class="exhibit__head">
-      <span class="exhibit__index">01</span>
       <div>
-        <h2 id="exhibitA">Exhibit A &#8212; Candidate Pool</h2>
-        <p class="exhibit__hint">A single .zip containing every resume you want considered.</p>
+        <h2 id="exhibitA">Candidate Pool Upload</h2>
+        <p class="exhibit__hint">A single .zip archive containing candidate resumes (.pdf format).</p>
       </div>
     </div>
 
-    <form action="/upload-zip" method="post" enctype="multipart/form-data" class="dropform">
+    <form action="/upload-zip" method="post" enctype="multipart/form-data" class="dropform" id="upload-form">
       <label for="zip_file" class="dropzone" id="dropzone">
         <svg class="dropzone__icon" viewBox="0 0 48 48" aria-hidden="true">
           <path d="M24 6 L24 30 M14 18 L24 6 L34 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
           <rect x="8" y="34" width="32" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="3"/>
         </svg>
         <span class="dropzone__text">
-          <strong>Drop the .zip here</strong>
-          <span>or click to browse &#8226; one archive, any number of resumes</span>
+          <strong>Drop your .zip file here</strong>
+          <span>or click to browse — supports multiple PDF resumes in one ZIP</span>
         </span>
         <span class="dropzone__filename" id="filename"></span>
       </label>
@@ -71,12 +54,19 @@
         required
         class="visually-hidden-input"
       >
-      <button type="submit" class="btn btn--pine">Upload Pool&nbsp;&#10230;</button>
+      <button type="submit" class="btn btn--pine" id="submit-btn">Upload &amp; Process Pool &rarr;</button>
     </form>
   </section>
 
+  <!-- Submit Overlay -->
+  <div class="submit-overlay" id="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <span>Extracting Resumes &amp; Building AI Index...</span>
+  </div>
+
   <footer class="folder__footer">
-    <span>Once uploaded, choose how to work the case.</span>
+    <span>RecruitAI Engine</span>
+    <span>Intake Mode</span>
   </footer>
 
 </main>
@@ -85,6 +75,8 @@
   const input = document.getElementById('zip_file');
   const filenameEl = document.getElementById('filename');
   const dropzone = document.getElementById('dropzone');
+  const uploadForm = document.getElementById('upload-form');
+  const loadingOverlay = document.getElementById('loading-overlay');
 
   input.addEventListener('change', () => {
     if (input.files && input.files.length > 0) {
@@ -113,6 +105,10 @@
       filenameEl.textContent = e.dataTransfer.files[0].name;
       dropzone.classList.add('dropzone--filled');
     }
+  });
+
+  uploadForm.addEventListener('submit', () => {
+    loadingOverlay.style.display = 'flex';
   });
 </script>
 

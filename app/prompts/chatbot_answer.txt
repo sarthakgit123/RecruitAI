@@ -1,0 +1,7 @@
+Answer the question using ONLY the provided candidate context. Do not invent details. Be concise.
+
+{history_block}Candidate Context:
+{context_text}
+
+Question: {question}
+Answer:

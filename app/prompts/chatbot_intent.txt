@@ -1,0 +1,13 @@
+Return ONLY valid JSON:
+{{
+  "skill": "<skill name or null>",
+  "min_years": <number or null>,
+  "role": "<job title held in past or null>",
+  "semantic_query": "<descriptive query phrase for semantic search>"
+}}
+Rules:
+- Only fill skill/min_years/role if explicitly present in question.
+- Do NOT extract role for fit/suitability questions ("good fit for X", "could work as Y") - set role to null.
+- semantic_query must contain the key topic (e.g. "Python programming skills").
+
+Question: {question}

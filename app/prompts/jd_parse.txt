@@ -1,0 +1,17 @@
+Return ONLY valid JSON matching this schema:
+{{
+  "role_title": "<job title or role name>",
+  "min_experience_years": <minimum required years of experience as a number, e.g. 2.0 or 0>,
+  "required_skills": ["<must-have skill 1>", "<must-have skill 2>"],
+  "preferred_skills": ["<nice-to-have skill 1>", "<nice-to-have skill 2>"],
+  "education_requirements": "<degree/education requirements if mentioned, else ''>",
+  "key_responsibilities": ["<responsibility 1>", "<responsibility 2>"],
+  "domain_keywords": ["<key domain or technology term 1>", "<term 2>"]
+}}
+Rules:
+- Extract explicit required vs preferred/nice-to-have skills.
+- min_experience_years must be a number (e.g. "3+ years" -> 3.0, "1-2 years" -> 1.0, unmentioned -> 0).
+- Output valid JSON only, no markdown code fences, no commentary.
+
+Job Description:
+{jd_text}

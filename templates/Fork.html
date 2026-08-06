@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Resume Matcher — Choose Path</title>
+<title>RecruitAI — Choose Path</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,60 +15,58 @@
 <main class="folder folder--fork">
 
   <header class="folder__header">
-    <div class="stamp" aria-hidden="true">
-      <svg viewBox="0 0 200 200" class="stamp__svg">
-        <defs>
-          <path id="stampCircleFork" d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"/>
-        </defs>
-        <circle cx="100" cy="100" r="92" class="stamp__ring stamp__ring--outer"/>
-        <circle cx="100" cy="100" r="64" class="stamp__ring stamp__ring--inner"/>
-        <text class="stamp__text">
-          <textPath href="#stampCircleFork" startOffset="0%">
-            CANDIDATE MATCH SYSTEM &#8226; INTAKE COMPLETE &#8226;
-          </textPath>
-        </text>
-        <text x="100" y="112" class="stamp__pct" text-anchor="middle">&#10003;</text>
-      </svg>
-    </div>
-
     <div class="folder__heading">
-      <p class="eyebrow">Hiring Intelligence &#8212; Internal Use</p>
-      <h1>Pool&nbsp;Intake&nbsp;Logged</h1>
+      <p class="eyebrow">Hiring Intelligence Platform</p>
+      <h1>RecruitAI</h1>
       <p class="folder__sub">
-        {% if count %}{{ count }} resume{{ "s" if count != 1 else "" }} processed and ready.{% else %}Resumes processed and ready.{% endif %}
+        {% if count %}{{ count }} candidate resume{{ "s" if count != 1 else "" }} processed and indexed.{% else %}Resumes processed and indexed.{% endif %}
       </p>
     </div>
 
     <div class="case-tab">
-      <span class="case-tab__label">File No.</span>
-      <span class="case-tab__value">0042</span>
+      <span class="case-tab__label">Status</span>
+      <span class="case-tab__value">Ready</span>
     </div>
   </header>
 
   <section class="fork-section">
-    <p class="fork-section__lede">Choose how to proceed with this pool.</p>
+    <p class="fork-section__lede">Select how you want to evaluate the candidate pool:</p>
 
     <div class="fork-grid">
 
       <a href="/jd-match" class="fork-card fork-card--pine">
-        <span class="fork-card__index">01</span>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="fork-card__index">01</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
         <h2>Run JD Match</h2>
-        <p>Paste a job description and get every candidate scored against it.</p>
-        <span class="fork-card__cta">Go to Exhibit B&nbsp;&#10230;</span>
+        <p>Paste a Job Description and rank every candidate by semantic and multi-factor similarity score.</p>
+        <span class="fork-card__cta">Go to Role Match &rarr;</span>
       </a>
 
       <a href="/chat" class="fork-card fork-card--rust">
-        <span class="fork-card__index">02</span>
-        <h2>Open the Interview</h2>
-        <p>Ask free-form questions across the whole pool — skills, experience, fit.</p>
-        <span class="fork-card__cta">Go to Exhibit C&nbsp;&#10230;</span>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="fork-card__index">02</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <h2>Candidate Chatbot</h2>
+        <p>Ask free-form questions across all resumes — skills, experience, projects, or background.</p>
+        <span class="fork-card__cta">Open Chat Room &rarr;</span>
       </a>
 
     </div>
   </section>
 
   <footer class="folder__footer">
-    <span>Both paths read from the same file. Nothing is re-uploaded.</span>
+    <a href="/" class="btn btn--outline" style="padding: 6px 14px; font-size: 11px;">&larr; Upload New Pool</a>
+    <span>RecruitAI Engine</span>
   </footer>
 
 </main>

@@ -3,14 +3,15 @@ const chatForm = document.getElementById("chat-form");
 const questionInput = document.getElementById("question-input");
 const sendBtn = document.getElementById("send-btn");
 const resetBtn = document.getElementById("reset-btn");
+const chatChips = document.querySelectorAll(".chat-chip");
 
 const WELCOME_HTML = `
   <div class="entry entry--bot">
-    <span class="entry__tag">SUBJECT FILE</span>
+    <span class="entry__tag">RECRUITAI ASSISTANT</span>
     <div class="entry__bubble">
-      Ask me anything about the uploaded resumes — for example
-      “who knows Python”, “who has 2+ years experience”, or
-      “who would be a good fit for a backend role”.
+      Ask me anything about the uploaded candidate resumes — for example:
+      "Who knows Python?", "Who has 2+ years experience?", or
+      "Who worked on machine learning projects?".
     </div>
   </div>
 `;
@@ -21,13 +22,18 @@ function addEntry(text, sender, options = {}) {
 
   const tag = document.createElement("span");
   tag.className = "entry__tag";
-  tag.textContent = sender === "user" ? "YOU ASK" : "SUBJECT FILE";
+  tag.textContent = sender === "user" ? "YOU ASK" : "RECRUITAI ASSISTANT";
 
   const bubble = document.createElement("div");
   bubble.className = "entry__bubble";
-  if (options.loading) bubble.classList.add("is-loading");
-  if (options.error) bubble.classList.add("is-error");
-  bubble.textContent = text;
+
+  if (options.loading) {
+    bubble.classList.add("is-loading");
+    bubble.innerHTML = `Analyzing candidates <span class="typing-dots"><span></span><span></span><span></span></span>`;
+  } else {
+    if (options.error) bubble.classList.add("is-error");
+    bubble.textContent = text;
+  }
 
   entry.appendChild(tag);
   entry.appendChild(bubble);
@@ -47,7 +53,7 @@ chatForm.addEventListener("submit", async (event) => {
   questionInput.value = "";
   sendBtn.disabled = true;
 
-  const loadingBubble = addEntry("Reviewing the file...", "bot", { loading: true });
+  const loadingBubble = addEntry("", "bot", { loading: true });
 
   try {
     const response = await fetch("/chat-api", {
@@ -64,23 +70,31 @@ chatForm.addEventListener("submit", async (event) => {
       loadingBubble.textContent = data.answer;
     } else {
       loadingBubble.classList.add("is-error");
-      loadingBubble.textContent = "Something went wrong: " + (data.message || "unknown error");
+      loadingBubble.textContent = "Error: " + (data.message || "Could not generate answer.");
     }
   } catch (err) {
     loadingBubble.classList.remove("is-loading");
     loadingBubble.classList.add("is-error");
-    loadingBubble.textContent = "Could not reach the server. Please try again.";
+    loadingBubble.textContent = "Could not reach the server. Please check your connection.";
   } finally {
     sendBtn.disabled = false;
     questionInput.focus();
+    transcript.scrollTop = transcript.scrollHeight;
   }
+});
+
+chatChips.forEach(chip => {
+  chip.addEventListener("click", () => {
+    questionInput.value = chip.getAttribute("data-q");
+    chatForm.requestSubmit();
+  });
 });
 
 resetBtn.addEventListener("click", async () => {
   try {
     await fetch("/chat-reset", { method: "POST" });
   } catch (err) {
-    // Non-critical if this fails - history just won't reset server-side
+    // Non-critical if reset endpoint fails
   }
 
   transcript.innerHTML = WELCOME_HTML;

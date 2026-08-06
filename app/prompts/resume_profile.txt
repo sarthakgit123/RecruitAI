@@ -1,0 +1,18 @@
+Return ONLY valid JSON matching this schema:
+{{
+  "name": "", "email": "", "phone": "", "location": "", "current_role": "",
+  "total_experience_years": 0, "skills": [],
+  "projects": [{{"title": "", "technologies": [], "description": []}}],
+  "education": [{{"institution": "", "degree": "", "score": "", "year": ""}}],
+  "experience": [{{"role": "", "company": "", "duration": "", "start_date": "", "end_date": "", "description": []}}]
+}}
+Rules:
+- Missing text -> "", missing array -> [], missing number -> 0.
+- "current_role" = most recent job title in experience, or "".
+- "total_experience_years" = sum of experience in years. Today's date is {today_str}.
+- "start_date" / "end_date" formatted YYYY-MM or "Present".
+- "experience" MUST include ONLY professional jobs/internships (exclude student clubs, volunteer, placement cell).
+- Output valid JSON only, no markdown, no commentary.
+
+Resume:
+{resume_text}
