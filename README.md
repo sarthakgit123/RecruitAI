@@ -1,26 +1,42 @@
-# AI Resume–JD Matcher & Chatbot
+# RecruitAI
 
-An AI-powered hiring assistant that does two things with a single pool of resumes:
+An AI-powered recruitment assistant that ranks resumes against job descriptions and lets you chat with your entire candidate pool.
 
-1. **JD Matching** — score every resume against a job description and rank candidates by similarity.
-2. **Resume Chatbot (RAG)** — ask free-form questions across the whole candidate pool ("who knows Python", "who has 2+ years experience", "who'd be a good fit for a backend role") and get grounded, multi-candidate answers.
+Upload a zip of resumes → get structured profiles, ranked matches, and a chatbot that answers questions like *"Who knows Python and has 2+ years experience?"*
 
-Built with **FastAPI**, **Gemini** (resume parsing + chat reasoning), **Sentence-Transformers** (embeddings), and **FAISS** (vector search).
+Built with **FastAPI**, **OpenRouter LLMs**, **Sentence-Transformers**, and **FAISS**.
 
 ---
 
-## How it works
+## Features
+
+- **Resume Upload** — Upload a `.zip` of PDF resumes. Each resume is parsed into structured JSON (name, skills, projects, education, experience) using LLM.
+- **Hybrid JD Matching** — Paste a job description and get candidates ranked by a weighted composite score:
+  - Semantic similarity (25%)
+  - Skill matching with synonym normalization (35%)
+  - Experience verification (20%)
+  - Project relevance (10%)
+  - Keyword coverage (10%)
+- **Explainable Rankings** — Each candidate shows matched/missing skills, strengths, weaknesses, and a plain-English ranking explanation.
+- **Resume Chatbot (RAG)** — Ask free-form questions across the whole candidate pool with intent extraction, hard filtering, and grounded answers.
+- **Skill Normalization** — 80+ synonym mappings (e.g., `postgres` → `PostgreSQL`, `js` → `JavaScript`) for accurate matching.
+- **Experience Verification** — Total experience years are recomputed from start/end dates in Python, not blindly trusted from LLM output.
+- **Centralized Prompts** — All LLM prompts live in editable `.txt` files under `app/prompts/`. Change prompts without touching code.
+
+---
+
+## How It Works
 
 ```
 Upload .zip of resumes
         │
         ▼
-Parse each PDF → structured JSON (Gemini)
+Parse each PDF → structured JSON (LLM)
         │
         ▼
-Verify experience years in plain Python (don't trust LLM math blindly)
+Verify experience years (Python date math)
         │
-        ├──► Build whole-resume FAISS index ──► JD Matcher
+        ├──► Build whole-resume FAISS index ──► JD Matcher (hybrid scoring)
         │
         └──► Chunk by section (skills / project / experience / education)
                      │
@@ -28,80 +44,69 @@ Verify experience years in plain Python (don't trust LLM math blindly)
              Build chunked FAISS index ──► Resume Chatbot (RAG)
 ```
 
-After upload, the user picks one of two paths:
+### JD Matching Pipeline
 
-- **JD Match** — paste a job description, get the top candidates ranked by similarity.
-- **Chatbot** — ask anything about the pool. Each question runs through:
-  1. **Intent extraction** (Gemini) — pulls out hard filters (skill / min years / role) and a semantic remainder.
-  2. **Metadata filtering** (plain Python) — exact filtering on the verified, structured resume data. No AI guesswork for numbers.
-  3. **FAISS semantic search** — restricted to the filtered candidate pool, for the fuzzy/open-ended part of the question.
-  4. **Answer generation** (Gemini) — grounded only in the retrieved context, instructed to consider every relevant candidate, not just one.
+1. Parse JD into structured JSON (role, required/preferred skills, experience, keywords)
+2. Retrieve Top-K candidates via FAISS vector similarity
+3. Rerank using hybrid scoring across 5 factors
+4. Generate explainability report for each candidate
 
-This hybrid design exists because pure vector similarity is bad at exact constraints ("3+ years of experience"), and pure keyword filtering can't handle open-ended judgment questions ("who'd be a good fit for this role"). Combining both gives accurate answers for both cases.
+### Chatbot Pipeline
 
----
-
-## Features
-
-- Upload a single `.zip` of resumes — any number of PDFs.
-- Automatic parsing into structured JSON via Gemini (name, skills, projects, education, experience).
-- Self-verified experience calculation — total years of experience are recomputed in Python from each role's start/end dates, rather than trusting the LLM's arithmetic.
-- JD Matcher — paste a job description, get ranked candidates by cosine similarity.
-- Resume Chatbot — cross-resume question answering with:
-  - Exact skill / experience / role filtering
-  - Open-ended fit and comparison reasoning
-  - Conversation history for natural follow-ups
-  - Honest "no candidates match" responses instead of hallucinated answers
-- Clean separation between the two FAISS indexes — one tuned for whole-resume JD matching, one chunked by section for precise chatbot retrieval.
-- Resilient to transient Gemini API overload (503) with automatic retry + backoff.
+1. Extract intent from question (skill filter, min years, role, semantic query)
+2. Apply hard metadata filters on structured profiles
+3. Semantic search on filtered candidates via FAISS
+4. Generate grounded answer from retrieved context
 
 ---
 
-## Tech stack
+## Tech Stack
 
 | Layer | Tool |
 |---|---|
 | Backend | FastAPI |
 | Templates | Jinja2 |
-| Resume parsing | Gemini API (`gemini-2.5-flash`) |
+| LLM | OpenRouter (Nemotron, LLaMA 3.3 70B) |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
-| Vector search | FAISS (`IndexFlatIP`, cosine similarity via L2-normalized vectors) |
-| PDF text extraction | PyMuPDF |
-| Frontend | Vanilla HTML / CSS / JS (no framework) |
+| Vector Search | FAISS (IndexFlatIP, cosine similarity) |
+| PDF Extraction | PyMuPDF |
+| Frontend | Vanilla HTML / CSS / JS |
 
 ---
 
-## Project structure
+## Project Structure
 
 ```
-AI-Resume-JD-Matcher/
-├── app.py                       # FastAPI app entrypoint, routes
-├── chatbot_routes.py             # /chat, /chat-api, /chat-reset routes
-├── services/
-│   ├── __init__.py
-│   ├── pdf_service.py             # Extracts all resumes in a zip → JSON profiles
-│   ├── profile_service.py         # Gemini PDF → structured JSON parsing
-│   ├── experience_utils.py        # Python-side verification of total experience years
-│   ├── faiss_service.py           # Builds the JD-matcher's whole-resume FAISS index
-│   ├── match_service.py           # Searches the JD-matcher index against a job description
-│   ├── chatbot_index_service.py   # Builds the chatbot's chunked FAISS index
-│   ├── chatbot_retrieval.py       # Intent extraction + hybrid filtering + semantic search
-│   └── chatbot_service.py         # Final answer generation + chat history
-├── templates/
-│   ├── index.html                 # Upload page (Exhibit A)
-│   ├── fork.html                  # Post-upload choice: JD Match or Chatbot
-│   ├── jd_match.html              # Job description input (Exhibit B)
-│   ├── results.html                # JD match results
-│   └── chat.html                   # Chatbot interface (Exhibit C)
-├── static/
-│   ├── style.css                   # Shared "case file" design system
-│   ├── fork.css
-│   └── chat.css / chat.js
-├── uploads/                        # Uploaded zips + extracted resumes (gitignored)
-├── profiles/                        # Parsed resume JSON (gitignored)
-├── faiss_db/                        # Both FAISS indexes + metadata (gitignored)
-├── .env                              # GEMINI_API_KEY (gitignored)
-└── requirements.txt
+RecruitAI/
+├── app/
+│   ├── main.py                              # FastAPI entry point, CORS, static mounts
+│   ├── api/routes/
+│   │   ├── upload.py                        # POST /upload-zip
+│   │   ├── match.py                         # GET /, GET /jd-match, POST /match, POST /match-ui
+│   │   └── chat.py                          # GET /chat, POST /chat-api, POST /chat-reset
+│   ├── core/
+│   │   └── config.py                        # Central settings, .env loading, path anchors
+│   ├── prompts/
+│   │   ├── resume_profile.txt               # Resume → JSON extraction prompt
+│   │   ├── jd_parse.txt                     # JD → structured JSON prompt
+│   │   ├── chatbot_intent.txt               # Intent extraction prompt
+│   │   └── chatbot_answer.txt               # RAG answer generation prompt
+│   ├── services/
+│   │   ├── upload/                          # Zip extraction, PDF processing
+│   │   ├── parser/                          # Profile generation, JD parsing, experience utils
+│   │   ├── matching/                        # Hybrid scorer, skill normalizer, explainability
+│   │   ├── chatbot/                         # RAG retrieval, answer generation, index builder
+│   │   └── vectorstore/                     # FAISS index builder
+│   └── schemas/                             # Pydantic response models
+│
+├── templates/                               # Jinja2 HTML templates
+├── static/                                  # CSS and JS
+├── uploads/                                 # Uploaded zips + extracted resumes (gitignored)
+├── profiles/                                # Parsed resume JSONs (gitignored)
+├── faiss_db/                                # FAISS indexes + metadata (gitignored)
+├── run.py                                   # Server launcher
+├── requirements.txt
+└── .env                                     # API keys (gitignored)
 ```
 
 ---
@@ -111,11 +116,11 @@ AI-Resume-JD-Matcher/
 ### 1. Clone and create a virtual environment
 
 ```bash
-git clone <your-repo-url>
-cd AI-Resume-JD-Matcher
+git clone https://github.com/sarthakgit123/RecruitAI.git
+cd RecruitAI
 python -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # macOS/Linux
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # macOS/Linux
 ```
 
 ### 2. Install dependencies
@@ -124,20 +129,20 @@ source venv/bin/activate     # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 3. Add your Gemini API key
+### 3. Add your API key
 
 Create a `.env` file in the project root:
 
 ```
-GEMINI_API_KEY=your_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
-Get a key from [Google AI Studio](https://aistudio.google.com/).
+Get a key from [OpenRouter](https://openrouter.ai/).
 
 ### 4. Run the app
 
 ```bash
-uvicorn app:app --reload
+python run.py
 ```
 
 Visit **http://127.0.0.1:8000**.
@@ -146,51 +151,64 @@ Visit **http://127.0.0.1:8000**.
 
 ## Usage
 
-1. **Upload a pool** — zip up resume PDFs, upload on the home page.
-2. The app parses every resume, verifies experience numbers, and builds both FAISS indexes automatically.
+1. **Upload** — Zip your resume PDFs and upload on the home page.
+2. The app parses every resume, verifies experience, and builds FAISS indexes automatically.
 3. **Choose a path:**
-   - **Run JD Match** → paste a job description → get ranked candidates.
-   - **Open the Interview** → ask the chatbot anything about the pool.
+   - **JD Match** → Paste a job description → Get ranked candidates with scores and explanations.
+   - **Chatbot** → Ask anything about the candidate pool.
 
-### Example chatbot questions
+### Example Chatbot Questions
 
 ```
 Who knows Python?
 Who has 2+ years of experience?
 Who has worked as an intern?
 Who would be a good fit for a backend role?
-I need a candidate to build an LLM-based platform. Who should I hire and why?
+Compare candidates for a full-stack position.
 ```
 
 ---
 
-## Design notes
+## API Endpoints
 
-**Why two separate FAISS indexes?**
-The JD-matcher needs a holistic, whole-resume comparison against a job description — one vector per resume. The chatbot needs precision at the section level (skills vs. a specific project vs. a specific role), so it's chunked into multiple vectors per resume. Reusing one index for both jobs would hurt one use case or the other.
-
-**Why verify experience years in Python instead of trusting Gemini's number?**
-LLM arithmetic on dates isn't reliable enough to filter candidates on. `experience_utils.py` recomputes total experience from each role's `start_date`/`end_date` and only falls back to Gemini's self-reported figure when dates are missing or unparseable.
-
-**Why hybrid retrieval instead of pure RAG or pure filtering?**
-Pure vector search struggles with exact constraints like "3+ years experience." Pure keyword filtering can't reason about open-ended questions like "who'd be a good culture fit." Combining hard metadata filters with semantic search on the filtered pool gets the best of both.
-
----
-
-## Known limitations
-
-- **Free-tier Gemini quota** is limited (20–250 requests/day depending on model and tier as of writing). Heavy testing can exhaust it quickly — each chatbot question costs 2 Gemini calls (intent extraction + answer generation), and each resume upload costs 1 call per resume.
-- **Chat history is in-memory and global**, not per-session — fine for solo use/demos, but concurrent users would share one conversation history.
-- **Re-uploading a zip rebuilds everything from scratch** — there's no incremental indexing yet.
-- Designed and tested at a scale of **50–300 resumes**; not yet optimized for much larger pools.
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Home / Upload page |
+| `POST` | `/upload-zip` | Upload resume zip file |
+| `GET` | `/jd-match` | JD Match input page |
+| `POST` | `/match` | Match API (returns JSON) |
+| `POST` | `/match-ui` | Match UI (returns HTML results) |
+| `GET` | `/chat` | Chatbot page |
+| `POST` | `/chat-api` | Chat API (returns JSON) |
+| `POST` | `/chat-reset` | Reset chat history |
 
 ---
 
-## Roadmap ideas
+## Design Decisions
 
-- [ ] Per-session chat history (so multiple users don't share one conversation)
-- [ ] Incremental indexing (only re-parse new/changed resumes)
-- [ ] Support multiple skills per filter query (e.g. "LangChain and LangGraph")
-- [ ] Swap to `gemini-2.5-flash-lite` or combine intent extraction + answer generation into one call to reduce quota usage
-- [ ] Async upload processing with a progress indicator for large pools
+**Why two FAISS indexes?**
+The JD matcher needs whole-resume vectors for holistic comparison. The chatbot needs section-level chunks (skills, projects, experience) for precise retrieval. One index can't serve both well.
 
+**Why verify experience in Python?**
+LLM arithmetic on dates is unreliable. `experience_utils.py` recomputes total years from each role's start/end dates and only falls back to the LLM's figure when dates are missing.
+
+**Why hybrid retrieval?**
+Pure vector search can't handle exact constraints like "3+ years experience." Pure filtering can't reason about "who'd be a good fit." Combining both gives accurate answers for both cases.
+
+**Why centralized prompts?**
+Keeping prompts in `.txt` files means you can iterate on prompt engineering without modifying any Python code. Just edit the template and restart.
+
+---
+
+## Known Limitations
+
+- **Free-tier API quota** is limited. Each chatbot question costs 2 LLM calls (intent + answer), and each resume upload costs 1 call per resume.
+- **Chat history is in-memory and global**, not per-session. Fine for solo use, not for concurrent users.
+- **Re-uploading rebuilds everything** — no incremental indexing yet.
+- Tested at a scale of **50–300 resumes**.
+
+---
+
+## License
+
+This project is for educational and demonstration purposes.
