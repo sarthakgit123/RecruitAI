@@ -12,6 +12,7 @@ Rules:
 - "total_experience_years" = sum of experience in years. Today's date is {today_str}.
 - "start_date" / "end_date" formatted YYYY-MM or "Present".
 - "experience" MUST include ONLY professional jobs/internships (exclude student clubs, volunteer, placement cell).
+- Keep project and experience descriptions concise (1-2 brief bullet points per entry).
 - Output valid JSON only, no markdown, no commentary.
 
 Resume:

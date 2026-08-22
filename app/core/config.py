@@ -21,6 +21,12 @@ class Settings(BaseModel):
     PROJECT_NAME: str = "RecruitAI"
     VERSION: str = "1.0.0"
 
+    # Database Configuration
+    DATABASE_URL: str = os.getenv(
+        "DATABASE_URL", 
+        "postgresql://postgres:postgres@localhost:5432/recruitai_db"
+    )
+
     # Directory Paths
     BASE_DIR: Path = BASE_DIR
     UPLOADS_DIR: Path = BASE_DIR / "uploads"

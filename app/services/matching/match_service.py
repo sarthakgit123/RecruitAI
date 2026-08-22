@@ -6,6 +6,7 @@ Hybrid Resume-JD Matching Architecture:
 2. FAISS Top-K Retrieval: Uses vector embeddings for fast initial candidate retrieval.
 3. Hybrid Reranker: Calculates multi-factor composite scores.
 4. Explainable Output: Generates matched/missing skills, strengths, weaknesses, and ranking reasons.
+5. PostgreSQL Persistence: Saves JD, parsed JD, and match results to database.
 """
 
 import os
@@ -13,13 +14,15 @@ import json
 import faiss
 import pickle
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from sentence_transformers import SentenceTransformer
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services.parser.jd_parser_service import parse_jd
 from app.services.matching.hybrid_matcher import compute_hybrid_score
 from app.services.matching.explainability_service import generate_candidate_explanation
+from app.database.models import JobDescription, MatchResult, Candidate
 
 _embedding_model = None
 
@@ -53,7 +56,77 @@ def _load_profile(resume_filename: str) -> Dict[str, Any]:
     }
 
 
-def process_resumes_and_match(jd_text: str) -> List[Dict[str, Any]]:
+def _save_match_to_db(
+    db: Session,
+    jd_text: str,
+    parsed_jd: Dict[str, Any],
+    results: List[Dict[str, Any]]
+) -> None:
+    """
+    Save the JD and all match results to PostgreSQL.
+    
+    Flow:
+      1. Insert the raw JD text + parsed JD into job_descriptions table.
+      2. For each ranked candidate, look up their UUID from the candidates table.
+      3. Insert the rank, score, breakdown, and explanation into match_results table.
+    """
+    # Save Job Description
+    jd_record = JobDescription(
+        role_title=parsed_jd.get("role_title", ""),
+        raw_jd_text=jd_text,
+        parsed_jd=parsed_jd
+    )
+    db.add(jd_record)
+    db.flush()  # flush to get jd_record.id assigned without committing yet
+
+    # Save each match result
+    for result in results:
+        # Look up the candidate's UUID from the candidates table
+        resume_name = result.get("resume", "")
+        candidate_id_str = os.path.splitext(resume_name)[0]
+        candidate_row = (
+            db.query(Candidate)
+            .filter(Candidate.candidate_id == candidate_id_str)
+            .first()
+        )
+
+        if candidate_row is None:
+            # Candidate not in DB yet (edge case: uploaded via JSON only, not through upload-zip)
+            print(f"  DB: Skipping match result for {candidate_id_str} (not in candidates table)")
+            continue
+
+        match_record = MatchResult(
+            job_id=jd_record.id,
+            candidate_id=candidate_row.id,
+            rank=result.get("rank", 0),
+            composite_score=result.get("similarity", 0.0),
+            score_breakdown=result.get("breakdown", {}),
+            matched_skills=result.get("matched_skills", []),
+            missing_skills=result.get("missing_skills", []),
+            strengths=result.get("strengths", []),
+            weaknesses=result.get("weaknesses", []),
+            explanation=result.get("explanation", "")
+        )
+        db.add(match_record)
+
+    db.commit()
+    print(f"  DB: Saved JD '{parsed_jd.get('role_title', 'N/A')}' + {len(results)} match results")
+
+
+def process_resumes_and_match(
+    jd_text: str,
+    db: Optional[Session] = None
+) -> List[Dict[str, Any]]:
+    """
+    Main matching pipeline.
+    
+    Args:
+        jd_text: Raw job description text from the user.
+        db: SQLAlchemy session. If provided, JD and match results are saved to PostgreSQL.
+    
+    Returns:
+        List of ranked candidate result dicts.
+    """
     if not os.path.exists(settings.RESUME_INDEX_PATH) or not os.path.exists(settings.RESUME_NAMES_PATH):
         return []
 
@@ -117,5 +190,12 @@ def process_resumes_and_match(jd_text: str) -> List[Dict[str, Any]]:
             "rank": rank,
             **cand
         })
+
+    # Save JD and match results to PostgreSQL
+    if db is not None:
+        try:
+            _save_match_to_db(db, jd_text, parsed_jd, final_results)
+        except Exception as e:
+            print(f"  DB: Failed to save match results: {e}")
 
     return final_results

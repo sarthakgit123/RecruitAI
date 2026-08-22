@@ -2,14 +2,17 @@
 match.py
 
 FastAPI routes for JD Match UI and JSON API.
+Passes a database session to match_service for PostgreSQL persistence of JDs and results.
 """
 
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services.matching.match_service import process_resumes_and_match
 from app.schemas.match import MatchAPIResponse
+from app.database.database import get_db
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(settings.TEMPLATES_DIR))
@@ -34,9 +37,9 @@ async def jd_match_page(request: Request):
 
 
 @router.post("/match-ui")
-async def match_ui(request: Request, jd: str = Form(...)):
+async def match_ui(request: Request, jd: str = Form(...), db: Session = Depends(get_db)):
     try:
-        results = process_resumes_and_match(jd)
+        results = process_resumes_and_match(jd, db=db)
         return templates.TemplateResponse(
             request=request,
             name="results.html",
@@ -60,9 +63,9 @@ async def match_ui(request: Request, jd: str = Form(...)):
 
 
 @router.post("/match", response_model=MatchAPIResponse)
-async def match_api(jd: str = Form(...)):
+async def match_api(jd: str = Form(...), db: Session = Depends(get_db)):
     try:
-        results = process_resumes_and_match(jd)
+        results = process_resumes_and_match(jd, db=db)
         return {
             "status": "success",
             "top_candidates": results

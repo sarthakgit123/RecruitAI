@@ -8,3 +8,6 @@ openai
 python-dotenv
 pymupdf
 numpy
+sqlalchemy
+psycopg2-binary
+alembic

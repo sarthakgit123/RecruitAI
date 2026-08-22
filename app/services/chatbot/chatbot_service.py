@@ -2,17 +2,18 @@
 chatbot_service.py
 
 Takes retrieval result from chatbot_retrieval.py and generates natural-language answers using OpenRouter LLM.
+Chat history is now persisted in PostgreSQL (chat_messages table) instead of an in-memory list.
 """
 
-import os
 import time
 from typing import Dict, Any, List, Optional
 from openai import OpenAI
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
 from app.services.chatbot.chatbot_retrieval import retrieve
 from app.prompts import load_prompt
-
-_chat_history: List[Dict[str, str]] = []
+from app.database.models import ChatMessage
 
 
 def _call_llm_with_retry(prompt: str) -> Optional[str]:
@@ -67,6 +68,24 @@ def _format_history_for_prompt(history: List[Dict[str, str]], max_turns: int = 3
     return "\n".join(lines)
 
 
+def _get_chat_history(db: Session, session_id: str = "default") -> List[Dict[str, str]]:
+    """Read chat history from PostgreSQL chat_messages table."""
+    messages = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.session_id == session_id)
+        .order_by(ChatMessage.created_at.asc())
+        .all()
+    )
+    return [{"role": msg.role, "content": msg.content} for msg in messages]
+
+
+def _save_chat_message(db: Session, role: str, content: str, session_id: str = "default") -> None:
+    """Save a single chat message to PostgreSQL."""
+    msg = ChatMessage(session_id=session_id, role=role, content=content)
+    db.add(msg)
+    db.commit()
+
+
 def generate_answer(question: str, retrieval_result: Dict[str, Any], history: Optional[List[Dict[str, str]]] = None) -> str:
     if retrieval_result.get("no_hard_filter_matches"):
         intent = retrieval_result["intent"]
@@ -84,7 +103,7 @@ def generate_answer(question: str, retrieval_result: Dict[str, Any], history: Op
         )
 
     context_text = _format_chunks_for_prompt(retrieval_result.get("chunks", []))
-    history_text = _format_history_for_prompt(history or _chat_history)
+    history_text = _format_history_for_prompt(history or [])
 
     history_block = f"History:\n{history_text}\n" if history_text else ""
     prompt_template = load_prompt("chatbot_answer")
@@ -105,19 +124,33 @@ def generate_answer(question: str, retrieval_result: Dict[str, Any], history: Op
     return answer
 
 
-def ask(question: str, top_k: int = 4, use_history: bool = True) -> str:
+def ask(question: str, db: Session, session_id: str = "default", top_k: int = 4) -> str:
+    """
+    Main chatbot entry point.
+    
+    Args:
+        question: The user's question.
+        db: SQLAlchemy database session (injected by FastAPI Depends).
+        session_id: Chat session identifier for multi-user support.
+        top_k: Number of top candidate chunks to retrieve.
+    
+    Returns:
+        The generated answer string.
+    """
     retrieval_result = retrieve(question, top_k=top_k)
 
-    history = _chat_history if use_history else []
+    # Load conversation history from PostgreSQL
+    history = _get_chat_history(db, session_id=session_id)
     answer = generate_answer(question, retrieval_result, history=history)
 
-    if use_history:
-        _chat_history.append({"role": "user", "content": question})
-        _chat_history.append({"role": "assistant", "content": answer})
+    # Save both user question and assistant answer to PostgreSQL
+    _save_chat_message(db, role="user", content=question, session_id=session_id)
+    _save_chat_message(db, role="assistant", content=answer, session_id=session_id)
 
     return answer
 
 
-def reset_history() -> None:
-    global _chat_history
-    _chat_history = []
+def reset_history(db: Session, session_id: str = "default") -> None:
+    """Delete all chat messages for a session from PostgreSQL."""
+    db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
+    db.commit()

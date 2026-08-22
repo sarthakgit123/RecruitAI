@@ -16,9 +16,12 @@ async def process_uploaded_zip(zip_file: UploadFile) -> Dict[str, Any]:
     os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
     os.makedirs(settings.RESUMES_DIR, exist_ok=True)
 
-    # Clear previous resumes
+    # Clear previous resumes, profiles, and faiss db
     shutil.rmtree(settings.RESUMES_DIR, ignore_errors=True)
     os.makedirs(settings.RESUMES_DIR, exist_ok=True)
+
+    shutil.rmtree(settings.PROFILES_DIR, ignore_errors=True)
+    os.makedirs(settings.PROFILES_DIR, exist_ok=True)
 
     # Save uploaded zip
     zip_path = settings.UPLOADS_DIR / zip_file.filename
